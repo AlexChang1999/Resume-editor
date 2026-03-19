@@ -9,7 +9,7 @@
         body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg-editor); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
 
         /* 編輯面板 */
-        .editor-panel { width: 480px; background: white; padding: 25px; height: 100vh; overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 10; }
+        .editor-panel { width: 480px; background: white; padding: 25px; height: 100vh; overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 10; flex-shrink: 0; }
         .control-group { background: #f9fafb; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #eee; }
         h3 { font-size: 16px; color: var(--primary-dark); border-bottom: 2px solid #eee; padding-bottom: 8px; margin: 25px 0 15px; }
         .input-item { margin-bottom: 12px; }
@@ -19,7 +19,7 @@
         .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; }
         .checkbox-group input { width: auto; cursor: pointer; }
 
-        /* 技能拖拉與動態列表 */
+        /* 技能拖拉 */
         .skill-list-editor { list-style: none; padding: 0; margin: 10px 0; border: 1px solid #eee; border-radius: 4px; }
         .skill-item-editor { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eee; background: white; cursor: grab; font-size: 14px; }
         .skill-item-editor.dragging { opacity: 0.5; background: #f0f0f0; }
@@ -28,32 +28,53 @@
         .btn-add { background: var(--primary-dark); color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 5px; font-weight: bold; }
         .btn-remove { color: #ef4444; cursor: pointer; font-size: 12px; position: absolute; top: 10px; right: 10px; font-weight: bold; }
 
-        /* 預覽區 */
-        .preview-scroll { flex-grow: 1; height: 100vh; overflow-y: auto; display: flex; justify-content: center; padding: 40px 0; background: #525659; }
-        .preview-container { width: 210mm; min-height: 297mm; background: white; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.3); box-sizing: border-box; }
+        /* 預覽區 - 直接分頁結構 */
+        .preview-scroll { flex-grow: 1; height: 100vh; overflow-y: auto; background: #525659; padding: 40px 0; display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
+        /* A4 紙張本體 */
+        .preview-container { 
+            width: 210mm; 
+            min-height: 297mm; 
+            background: white; 
+            padding: 20mm; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.3); 
+            box-sizing: border-box; 
+            position: relative;
+        }
+        
+        /* 內容樣式 */
         .resume-header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--primary-dark); padding-bottom: 15px; margin-bottom: 20px; }
         .photo-view { width: 100px; height: 120px; object-fit: cover; border: 1px solid #eee; border-radius: 4px; display: none; margin-left: 20px; }
         .photo-view.active { display: block; }
-
         .resume-name { font-size: 32px; font-weight: 700; color: var(--primary-dark); margin: 0; }
         .resume-contact { font-size: 13px; color: var(--text-light); margin-top: 8px; display: flex; gap: 15px; flex-wrap: wrap; }
         .section-header { font-size: 16px; font-weight: 700; color: var(--primary-dark); background: #f3f4f6; padding: 6px 12px; margin: 20px 0 10px; text-transform: uppercase; }
-        
         .item-row { display: flex; justify-content: space-between; font-weight: 700; color: var(--text-main); margin-top: 12px; font-size: 14px; }
         .item-sub { color: var(--accent-color); font-size: 13px; font-weight: 600; margin-bottom: 4px; }
         .item-desc { font-size: 13px; line-height: 1.6; white-space: pre-line; color: var(--text-main); margin-bottom: 10px; }
-
         .skill-tags-view { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
         .skill-tag-resume { font-size: 12px; color: white; background: var(--primary-dark); padding: 4px 10px; border-radius: 12px; }
 
         .btn-print { background: #2ecc71; color: white; width: 100%; padding: 15px; font-size: 16px; margin-top: 30px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
         .hidden { display: none !important; }
 
+        /* 列印模式優化 */
         @media print {
-            .editor-panel { display: none; }
-            .preview-scroll { padding: 0; background: white; overflow: visible; }
-            .preview-container { box-shadow: none; width: 100%; margin: 0; padding: 15mm; }
+            body { background: white !important; display: block !important; height: auto !important; overflow: visible !important; }
+            .editor-panel { display: none !important; }
+            .preview-scroll { display: block !important; background: white !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; height: auto !important; width: 100% !important; }
+            .preview-container { 
+                box-shadow: none !important; 
+                width: 210mm !important; 
+                padding: 15mm !important; 
+                margin: 0 auto !important; 
+                page-break-after: always !important; /* 強制分頁核心 */
+                border: none !important;
+                display: block !important;
+            }
+            /* 最後一頁不需要強行分頁 */
+            .preview-container:last-child { page-break-after: auto !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
 </head>
@@ -63,62 +84,56 @@
     <div class="control-group">
         <label id="labelDisplay">介面與顯示設定</label>
         <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px">
-            <input type="color" id="colorPicker" value="#1a2a3a" oninput="updateThemeColor(this.value)" style="width:50px; height:30px; padding:2px">
-            <span id="labelColorPicker" style="font-size:12px">自訂主題顏色</span>
+            <input type="color" id="colorPicker" value="#1a2a3a" oninput="updateThemeColor(this.value)">
+            <span style="font-size:12px">自訂主題顏色</span>
         </div>
         <div class="checkbox-group">
             <input type="checkbox" id="langToggle" onchange="updateLanguage(this.checked)">
-            <label for="langToggle" id="labelTextLang">使用英文界面 (English)</label>
+            <label id="labelTextLang">使用英文界面 (English)</label>
         </div>
         <div class="checkbox-group">
             <input type="checkbox" id="togglePhoto" checked onchange="togglePhotoVisibility(this.checked)">
             <label id="labelShowPhoto">顯示大頭貼</label>
         </div>
         <div class="checkbox-group">
-            <input type="checkbox" id="photoCircle" onchange="togglePhotoStyle(this.checked)">
-            <label id="labelPhotoCircle">圓形大頭貼</label>
-        </div>
-        <div class="checkbox-group">
             <input type="checkbox" id="toggleSalary" checked onchange="toggleSalaryVisibility(this.checked)">
             <label id="labelShowSalary">顯示期待薪資</label>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="togglePF" checked onchange="togglePFVisibility(this.checked)">
+            <label id="labelShowPF">顯示作品集網址</label>
         </div>
     </div>
 
     <h3 id="labelPersonal">個人資訊</h3>
-    <div class="input-item"><label id="labelPhotoUp">大頭貼上傳</label><input type="file" accept="image/*" onchange="handlePhoto(this)"></div>
+    <div class="input-item"><label>大頭貼上傳</label><input type="file" accept="image/*" onchange="handlePhoto(this)"></div>
     <div class="input-item"><label id="labelName">姓名</label><input type="text" id="inputName" value="ALEX CHEN" oninput="sync('preName', this.value)"></div>
     <div class="input-item"><label id="labelEmail">Email</label><input type="text" id="inputEmail" value="alex.chen@example.com" oninput="sync('preEmail', this.value)"></div>
     <div class="input-item"><label id="labelSalaryIn">期待年薪</label><input type="number" id="inputSalary" placeholder="800000" oninput="updateSalary(this.value)"></div>
 
-    <h3 id="labelSummaryTitle">自我簡介 & 拖拉技能</h3>
+    <h3 id="labelSummaryTitle">自我簡介 & 技能</h3>
+    <div class="input-item"><textarea id="inputSummary" rows="4" oninput="sync('preSummary', this.value)"></textarea></div>
     <div class="input-item">
-        <textarea id="inputSummary" rows="4" oninput="sync('preSummary', this.value)" placeholder="簡介內容..."></textarea>
-    </div>
-    <div class="input-item">
-        <label id="labelSkillAdd">新增技能</label>
-        <div style="display:flex; gap:5px">
-            <input type="text" id="skillInput" placeholder="例如: Java">
-            <button id="btnSkillAdd" onclick="addSkill()" style="width:60px">新增</button>
-        </div>
+        <div style="display:flex; gap:5px"><input type="text" id="skillInput" placeholder="新增技能"><button onclick="addSkill()">新增</button></div>
         <ul class="skill-list-editor" id="skillListEditor"></ul>
     </div>
 
     <h3 id="labelExpHeader">工作經歷</h3>
     <div id="expListEditor"></div>
-    <button class="btn-add" id="btnAddExp" onclick="addItem('exp')">+ 新增經歷</button>
+    <button class="btn-add" onclick="addItem('exp')">+ 新增經歷</button>
 
     <h3 id="labelEduHeader">教育程度</h3>
     <div id="eduListEditor"></div>
-    <button class="btn-add" id="btnAddEdu" onclick="addItem('edu')">+ 新增教育</button>
+    <button class="btn-add" onclick="addItem('edu')">+ 新增教育</button>
 
     <h3 id="labelPortfolio">作品集網址</h3>
     <input type="text" id="inputPFUrl" placeholder="https://github.com/..." oninput="updatePFLink(this.value)">
 
-    <button class="btn-print" id="btnPrint" onclick="window.print()">下載 / 儲存 PDF</button>
+    <button class="btn-print" onclick="window.print()">下載 / 儲存 PDF</button>
 </div>
 
 <div class="preview-scroll">
-    <div class="preview-container">
+    <div class="preview-container" id="resumePage1">
         <div class="resume-header-flex">
             <div style="flex:1">
                 <h1 id="preName" class="resume-name">ALEX CHEN</h1>
@@ -140,86 +155,66 @@
         <div class="section-header" id="preEduHeaderView">教育背景</div>
         <div id="preEduList"></div>
 
-        <div class="section-header" id="prePFHeader">作品集連結</div>
-        <a id="prePFLink" style="color:var(--accent-color); font-weight:bold; text-decoration:none; font-size:14px" href="#" target="_blank">尚未設定網址</a>
+        <div id="pfSection">
+            <div class="section-header" id="prePFHeader">作品集連結</div>
+            <a id="prePFLink" style="color:var(--accent-color); font-weight:bold; text-decoration:none; font-size:14px" href="#" target="_blank">尚未設定網址</a>
+        </div>
     </div>
 </div>
 
 <script>
     const i18n = {
         zh: {
-            display: "介面與顯示設定", lang: "使用英文界面 (English)", photoCircle: "圓形大頭貼", showSalary: "顯示期待薪資", showPhoto: "顯示大頭貼",
-            personal: "個人資訊", photoUp: "大頭貼上傳", name: "姓名", email: "Email", salaryIn: "期待年薪",
-            summary: "自我簡介 & 拖拉技能", skillAdd: "新增技能", btnSkillAdd: "新增",
-            expHeader: "工作經歷", eduHeader: "教育程度", portfolio: "作品集網址", print: "下載 / 儲存 PDF",
+            display: "介面與顯示設定", lang: "使用英文界面 (English)", showSalary: "顯示期待薪資", showPhoto: "顯示大頭貼", showPF: "顯示作品集網址",
+            personal: "個人資訊", name: "姓名", email: "Email", salaryIn: "期待年薪",
+            summary: "自我簡介 & 技能", expHeader: "工作經歷", eduHeader: "教育程度", portfolio: "作品集網址",
             salaryPre: "期待年薪:", summaryHeader: "專業概覽", expView: "工作經歷", eduView: "教育背景", pfHeader: "作品集連結",
-            phTitle: "職位 / 學位", phOrg: "單位 / 學校", phTime: "年份 (如: 2022 - 2024)", phDesc: "具體成就描述...", noUrl: "尚未設定網址",
-            empty: "(未填寫)"
+            phTitle: "職位 / 學位", phOrg: "單位 / 學校", phTime: "年份", phDesc: "成就描述...", noUrl: "尚未設定網址", empty: "(未填寫)"
         },
         en: {
-            display: "Interface Settings", lang: "English Interface", photoCircle: "Circular Photo", showSalary: "Show Salary", showPhoto: "Show Photo",
-            personal: "Personal Info", photoUp: "Upload Photo", name: "Name", email: "Email", salaryIn: "Expected Salary",
-            summary: "Summary & Skills", skillAdd: "Add Skill", btnSkillAdd: "Add",
-            expHeader: "Work Experience", eduHeader: "Education", portfolio: "Portfolio URL", print: "Save as PDF",
-            salaryPre: "Expected Salary:", summaryHeader: "Professional Summary", expView: "Experience", eduView: "Education", pfHeader: "Portfolio",
-            phTitle: "Title / Degree", phOrg: "Company / School", phTime: "Period (e.g. 2022 - Present)", phDesc: "Key achievements...", noUrl: "URL not set",
-            empty: "(Empty)"
+            display: "Settings", lang: "English UI", showSalary: "Show Salary", showPhoto: "Show Photo", showPF: "Show Portfolio",
+            personal: "Personal", name: "Name", email: "Email", salaryIn: "Salary",
+            summary: "Summary & Skills", expHeader: "Work Experience", eduHeader: "Education", portfolio: "Portfolio URL",
+            salaryPre: "Expected Salary:", summaryHeader: "Summary", expView: "Experience", eduView: "Education", pfHeader: "Portfolio",
+            phTitle: "Title", phOrg: "Org", phTime: "Period", phDesc: "Details...", noUrl: "Not Set", empty: "(Empty)"
         }
     };
 
     let skills = ['Java', 'SpringBoot', 'Python'];
     let data = {
-        exp: [{ title: 'Backend Developer Intern', org: 'Tech Solutions Inc.', time: '2025 - Present', desc: 'Maintained RESTful APIs and optimized database queries using PostgreSQL.' }],
-        edu: [{ title: 'B.B.A. in International Business', org: 'Tunghai University', time: '2018 - 2022', desc: 'Graduated in 2022.' }]
+        exp: [{ title: 'Backend Developer', org: 'Tech Inc.', time: '2025 - Present', desc: 'API design...' }],
+        edu: [{ title: 'B.B.A.', org: 'University', time: '2018 - 2022', desc: 'Major in Biz.' }]
     };
 
     function updateLanguage(isEnglish) {
         const lang = isEnglish ? i18n.en : i18n.zh;
         document.getElementById('labelDisplay').innerText = lang.display;
         document.getElementById('labelTextLang').innerText = lang.lang;
-        document.getElementById('labelPhotoCircle').innerText = lang.photoCircle;
         document.getElementById('labelShowSalary').innerText = lang.showSalary;
         document.getElementById('labelShowPhoto').innerText = lang.showPhoto;
+        document.getElementById('labelShowPF').innerText = lang.showPF;
         document.getElementById('labelPersonal').innerText = lang.personal;
-        document.getElementById('labelPhotoUp').innerText = lang.photoUp;
         document.getElementById('labelName').innerText = lang.name;
         document.getElementById('labelEmail').innerText = lang.email;
         document.getElementById('labelSalaryIn').innerText = lang.salaryIn;
         document.getElementById('labelSummaryTitle').innerText = lang.summary;
-        document.getElementById('labelSkillAdd').innerText = lang.skillAdd;
-        document.getElementById('btnSkillAdd').innerText = lang.btnSkillAdd;
         document.getElementById('labelExpHeader').innerText = lang.expHeader;
         document.getElementById('labelEduHeader').innerText = lang.eduHeader;
         document.getElementById('labelPortfolio').innerText = lang.portfolio;
-        document.getElementById('btnPrint').innerText = lang.print;
         document.getElementById('textSalaryLabel').innerText = lang.salaryPre;
         document.getElementById('preSummaryHeader').innerText = lang.summaryHeader;
         document.getElementById('preExpHeaderView').innerText = lang.expView;
         document.getElementById('preEduHeaderView').innerText = lang.eduView;
         document.getElementById('prePFHeader').innerText = lang.pfHeader;
-        
         renderAll();
     }
 
+    function togglePFVisibility(show) { document.getElementById('pfSection').classList.toggle('hidden', !show); }
     function updateThemeColor(color) { document.documentElement.style.setProperty('--primary-dark', color); }
-    
-    function sync(id, val) { 
-        const isEn = document.getElementById('langToggle').checked;
-        document.getElementById(id).innerText = val || (isEn ? i18n.en.empty : i18n.zh.empty); 
-    }
-
+    function sync(id, val) { document.getElementById(id).innerText = val || (document.getElementById('langToggle').checked ? i18n.en.empty : i18n.zh.empty); }
     function updateSalary(val) { document.getElementById('preSalary').innerText = val ? Number(val).toLocaleString() : '---'; }
     function toggleSalaryVisibility(show) { document.getElementById('preSalaryWrapper').classList.toggle('hidden', !show); }
-
-    // 新增：切換照片顯示/隱藏
-    function togglePhotoVisibility(show) {
-        const photo = document.getElementById('prePhoto');
-        if (show && photo.getAttribute('src')) {
-            photo.classList.add('active');
-        } else {
-            photo.classList.remove('active');
-        }
-    }
+    function togglePhotoVisibility(show) { document.getElementById('prePhoto').classList.toggle('active', show && document.getElementById('prePhoto').src); }
 
     function handlePhoto(input) {
         if (input.files[0]) {
@@ -227,61 +222,39 @@
             reader.onload = e => {
                 const img = document.getElementById('prePhoto');
                 img.src = e.target.result;
-                if (document.getElementById('togglePhoto').checked) {
-                    img.classList.add('active');
-                }
+                if (document.getElementById('togglePhoto').checked) img.classList.add('active');
             };
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    function togglePhotoStyle(isCircle) { document.getElementById('prePhoto').style.borderRadius = isCircle ? '50%' : '4px'; }
-
-    function addItem(type) {
-        data[type].push({ title: '', org: '', time: '', desc: '' });
-        renderAll();
-    }
-
-    function removeItem(type, index) {
-        data[type].splice(index, 1);
-        renderAll();
-    }
-
-    function updateItem(type, index, field, val) {
-        data[type][index][field] = val;
-        renderPreviewList(type);
-    }
+    function addItem(type) { data[type].push({ title: '', org: '', time: '', desc: '' }); renderAll(); }
+    function removeItem(type, index) { data[type].splice(index, 1); renderAll(); }
+    function updateItem(type, index, field, val) { data[type][index][field] = val; renderPreviewList(type); }
 
     function renderAll() {
-        renderEditorList('exp');
-        renderEditorList('edu');
-        renderPreviewList('exp');
-        renderPreviewList('edu');
+        renderEditorList('exp'); renderEditorList('edu');
+        renderPreviewList('exp'); renderPreviewList('edu');
         renderSkills();
     }
 
     function renderEditorList(type) {
         const lang = document.getElementById('langToggle').checked ? i18n.en : i18n.zh;
-        const container = document.getElementById(`${type}ListEditor`);
-        container.innerHTML = data[type].map((item, i) => `
+        document.getElementById(`${type}ListEditor`).innerHTML = data[type].map((item, i) => `
             <div class="dynamic-list-item">
                 <span class="btn-remove" onclick="removeItem('${type}', ${i})">✕</span>
-                <input type="text" placeholder="${lang.phTitle}" value="${item.title}" oninput="updateItem('${type}', ${i}, 'title', this.value)" style="margin-bottom:5px">
-                <div style="display:flex; gap:5px; margin-bottom:5px">
-                    <input type="text" placeholder="${lang.phOrg}" value="${item.org}" oninput="updateItem('${type}', ${i}, 'org', this.value)">
-                    <input type="text" placeholder="${lang.phTime}" value="${item.time}" oninput="updateItem('${type}', ${i}, 'time', this.value)" style="width:140px">
-                </div>
+                <input type="text" placeholder="${lang.phTitle}" value="${item.title}" oninput="updateItem('${type}', ${i}, 'title', this.value)">
+                <input type="text" placeholder="${lang.phOrg}" value="${item.org}" oninput="updateItem('${type}', ${i}, 'org', this.value)">
+                <input type="text" placeholder="${lang.phTime}" value="${item.time}" oninput="updateItem('${type}', ${i}, 'time', this.value)">
                 <textarea placeholder="${lang.phDesc}" oninput="updateItem('${type}', ${i}, 'desc', this.value)">${item.desc}</textarea>
             </div>
         `).join('');
     }
 
     function renderPreviewList(type) {
-        const isEn = document.getElementById('langToggle').checked;
-        const container = document.getElementById(`pre${type.charAt(0).toUpperCase() + type.slice(1)}List`);
-        container.innerHTML = data[type].map(item => `
-            <div>
-                <div class="item-row"><span>${item.title || (isEn ? 'Title' : '標題')}</span><span>${item.time}</span></div>
+        document.getElementById(`pre${type.charAt(0).toUpperCase() + type.slice(1)}List`).innerHTML = data[type].map(item => `
+            <div style="margin-bottom: 12px;">
+                <div class="item-row"><span>${item.title}</span><span>${item.time}</span></div>
                 <div class="item-sub">${item.org}</div>
                 <div class="item-desc">${item.desc}</div>
             </div>
@@ -289,46 +262,28 @@
     }
 
     function renderSkills() {
-        const editorList = document.getElementById('skillListEditor');
-        const resumeTags = document.getElementById('preTags');
-        editorList.innerHTML = '';
-        resumeTags.innerHTML = '';
+        const editor = document.getElementById('skillListEditor');
+        const tags = document.getElementById('preTags');
+        editor.innerHTML = ''; tags.innerHTML = '';
         skills.forEach((skill, index) => {
             const li = document.createElement('li');
             li.className = 'skill-item-editor';
-            li.draggable = true;
-            li.innerHTML = `<span>☰ ${skill}</span><span onclick="removeSkill(${index})" style="cursor:pointer; color:red">✕</span>`;
-            li.addEventListener('dragstart', () => li.classList.add('dragging'));
-            li.addEventListener('dragend', () => { li.classList.remove('dragging'); updateSkillOrder(); });
-            editorList.appendChild(li);
-            
+            li.innerHTML = `<span>${skill}</span><span onclick="removeSkill(${index})">✕</span>`;
+            editor.appendChild(li);
             const tag = document.createElement('span');
             tag.className = 'skill-tag-resume';
             tag.innerText = skill;
-            resumeTags.appendChild(tag);
+            tags.appendChild(tag);
         });
     }
 
-    function addSkill() {
-        const input = document.getElementById('skillInput');
-        if (input.value.trim()) { skills.push(input.value.trim()); input.value = ''; renderSkills(); }
-    }
-
+    function addSkill() { const input = document.getElementById('skillInput'); if (input.value.trim()) { skills.push(input.value.trim()); input.value = ''; renderSkills(); } }
     function removeSkill(index) { skills.splice(index, 1); renderSkills(); }
-
-    function updateSkillOrder() {
-        const items = document.querySelectorAll('.skill-item-editor');
-        skills = Array.from(items).map(item => item.innerText.replace('☰', '').replace('✕', '').trim());
-        renderSkills();
+    function updatePFLink(val) {
+        const link = document.getElementById('prePFLink');
+        link.href = val.startsWith('http') ? val : 'https://' + val;
+        link.innerText = val || (document.getElementById('langToggle').checked ? i18n.en.noUrl : i18n.zh.noUrl);
     }
-
-    document.getElementById('skillListEditor').addEventListener('dragover', e => {
-        e.preventDefault();
-        const dragging = document.querySelector('.dragging');
-        const afterElement = [...document.querySelectorAll('.skill-item-editor:not(.dragging)')].find(child => e.clientY < child.getBoundingClientRect().top + child.getBoundingClientRect().height / 2);
-        if (afterElement == null) document.getElementById('skillListEditor').appendChild(dragging);
-        else document.getElementById('skillListEditor').insertBefore(dragging, afterElement);
-    });
 
     updateLanguage(false);
 </script>
