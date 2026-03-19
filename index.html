@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>專業轉職流動版履歷編輯器</title>
+    <title>Professional Resume Editor</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary-dark: #1a2a3a; --accent-color: #c0392b; --border-color: #d1d5db; --bg-editor: #f3f4f6; --text-main: #374151; --text-light: #6b7280; }
@@ -19,32 +19,25 @@
         .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; }
         .checkbox-group input { width: auto; cursor: pointer; }
 
-        /* 顏色選擇器 */
         .color-picker-wrapper { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
         .color-picker { width: 50px; height: 35px; padding: 2px; cursor: pointer; border: 1px solid var(--border-color); border-radius: 4px; }
 
-        /* 技能拖拉樣式 */
         .skill-list-editor { list-style: none; padding: 0; margin: 10px 0; border: 1px solid #eee; border-radius: 4px; }
         .skill-item-editor { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eee; background: white; cursor: grab; }
         .skill-item-editor:last-child { border-bottom: none; }
         .skill-item-editor.dragging { opacity: 0.5; background: #f0f0f0; }
         .skill-item-editor .drag-handle { color: #ccc; margin-right: 10px; }
-        .btn-add-skill { background: var(--text-light); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%; margin-top: 5px; }
 
         .btn-print { background: var(--primary-dark); color: white; width: 100%; padding: 15px; font-size: 16px; margin-top: 20px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
 
         /* 預覽區 */
         .preview-container { width: 210mm; height: 95vh; overflow-y: auto; background: white; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box; }
-
         .resume-header { border-bottom: 3px solid var(--primary-dark); padding-bottom: 15px; margin-bottom: 20px; }
         .resume-name { font-size: 28px; font-weight: 700; color: var(--primary-dark); margin: 0; }
         .resume-contact { font-size: 13px; color: var(--text-light); margin-top: 8px; display: flex; gap: 15px; }
-        
-        /* 換行與技能標籤 */
         .resume-summary { font-size: 13px; line-height: 1.6; margin: 15px 0 10px; white-space: pre-line; color: var(--text-main); }
         .skill-tags-view { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
         .skill-tag-resume { font-size: 12px; color: white; background: var(--primary-dark); padding: 4px 10px; border-radius: 12px; font-weight: 500; }
-
         .section-header { font-size: 16px; font-weight: 700; color: var(--primary-dark); background: #f3f4f6; padding: 6px 12px; margin: 25px 0 10px; text-transform: uppercase; }
         .portfolio-section { margin-top: 10px; padding: 15px; border: 1px dashed var(--border-color); border-radius: 4px; }
         .portfolio-link { color: var(--accent-color); text-decoration: none; font-weight: 500; word-break: break-all; font-size: 14px; }
@@ -65,7 +58,7 @@
         <label id="labelDisplay">介面與顯示設定</label>
         <div class="color-picker-wrapper">
             <input type="color" class="color-picker" id="colorPicker" value="#1a2a3a" oninput="updateThemeColor(this.value)">
-            <span style="font-size: 12px; color: #888;">自訂主題顏色</span>
+            <span id="labelColorPicker" style="font-size: 12px; color: #888;">自訂主題顏色</span>
         </div>
         <div class="checkbox-group">
             <input type="checkbox" id="langToggle" onchange="updateLanguage(this.checked)">
@@ -86,28 +79,28 @@
     </div>
 
     <h3 id="labelPersonal">個人資訊</h3>
-    <div class="input-item"><label id="labelName">姓名</label><input type="text" value="ALEX CHEN" oninput="sync('preName', this.value)"></div>
+    <div class="input-item"><label id="labelName">姓名</label><input type="text" id="inputName" value="ALEX CHEN" oninput="sync('preName', this.value)"></div>
     <div class="input-item"><label>Email</label><input type="text" value="alex.chen@example.com" oninput="sync('preEmail', this.value)"></div>
-    <div class="input-item"><label id="labelSalaryIn">期待年薪</label><input type="number" placeholder="800000" oninput="updateSalary(this.value)"></div>
+    <div class="input-item"><label id="labelSalaryIn">期待年薪</label><input type="number" id="inputSalary" placeholder="800000" oninput="updateSalary(this.value)"></div>
 
     <h3 id="labelSummaryTitle">自我簡介 & 拖拉技能</h3>
     <div class="input-item">
         <label id="labelSummaryContent">簡介內容 (支援換行)</label>
-        <textarea rows="5" oninput="sync('preSummary', this.value)" placeholder="按 Enter 鍵可直接換行..."></textarea>
+        <textarea id="inputSummary" rows="5" oninput="sync('preSummary', this.value)" placeholder="按 Enter 鍵可直接換行..."></textarea>
     </div>
     
     <div class="input-item">
         <label id="labelSkillAdd">新增專業技能</label>
         <div style="display: flex; gap: 5px;">
             <input type="text" id="skillInput" placeholder="例如: Java, Python">
-            <button style="width: 80px;" onclick="addSkill()">新增</button>
+            <button id="btnSkillAdd" style="width: 80px;" onclick="addSkill()">新增</button>
         </div>
         <ul class="skill-list-editor" id="skillListEditor"></ul>
     </div>
 
     <h3 id="labelPortfolio">作品集設定</h3>
-    <div class="input-item"><label id="labelPFTitleIn">作品集標題</label><input type="text" placeholder="GitHub 專案展示" oninput="sync('prePFTitle', this.value)"></div>
-    <div class="input-item"><label id="labelPFUrl">作品集網址</label><input type="text" placeholder="https://github.com/..." oninput="updatePFLink(this.value)"></div>
+    <div class="input-item"><label id="labelPFTitleIn">作品集標題</label><input type="text" id="inputPFTitle" placeholder="GitHub 專案展示" oninput="sync('prePFTitle', this.value)"></div>
+    <div class="input-item"><label id="labelPFUrl">作品集網址</label><input type="text" id="inputPFUrl" placeholder="https://github.com/..." oninput="updatePFLink(this.value)"></div>
 
     <button class="btn-print" id="btnPrint" onclick="window.print()">下載 / 儲存 PDF</button>
 </div>
@@ -126,7 +119,7 @@
 
     <div id="preSummarySection">
         <div class="section-header" id="preSummaryHeader">自我簡介</div>
-        <div id="preSummary" class="resume-summary">請輸入您的個人簡介，建議強調轉職成果...</div>
+        <div id="preSummary" class="resume-summary">請輸入您的個人簡介...</div>
         <div id="preTags" class="skill-tags-view"></div>
     </div>
 
@@ -140,7 +133,7 @@
         <div class="portfolio-section">
             <h4 id="prePFTitle" style="margin-top: 0;">GitHub 專案展示</h4>
             <a id="prePFLink" class="portfolio-link" href="#" target="_blank">尚未設定網址</a>
-            <p style="font-size: 13px; color: var(--text-main); margin-top: 10px; line-height: 1.6;">
+            <p id="prePFDesc" style="font-size: 13px; color: var(--text-main); margin-top: 10px; line-height: 1.6;">
                 這裡可以放入專案說明。例如：Python 股票預測分析或 Java 後端 Restful API 練習。
             </p>
         </div>
@@ -150,20 +143,36 @@
 <script>
     const i18n = {
         zh: {
+            display: "介面與顯示設定", colorPick: "自訂主題顏色",
             personal: "個人資訊", name: "姓名", salaryIn: "期待年薪", 
             summary: "自我簡介 & 拖拉技能", summaryContent: "簡介內容 (支援換行)", skillAdd: "新增專業技能",
             portfolio: "作品集設定", pfTitle: "作品集標題", pfUrl: "作品集網址",
             showSummary: "顯示自我簡介", showSalary: "顯示期待年薪", showPortfolio: "顯示作品集區塊",
             print: "下載 / 儲存 PDF", salaryPre: "期待年薪:", summaryHeader: "自我簡介", 
-            expHeader: "經歷與教育", pfHeader: "作品集與補充資料"
+            expHeader: "經歷與教育", pfHeader: "作品集與補充資料",
+            // 動態內容
+            phName: "姓名", phSalary: "例如: 800000", phSummary: "按 Enter 鍵可直接換行...",
+            phSkill: "例如: Java, Python", phPFTitle: "GitHub 專案展示", phPFUrl: "https://github.com/...",
+            btnSkill: "新增", emptyVal: "(未填寫)", noUrl: "尚未設定網址",
+            defaultSummary: "請輸入您的個人簡介，建議強調轉職成果...",
+            defaultExp: "請在此處填寫經歷...",
+            defaultPFDesc: "這裡可以放入專案說明。例如：Python 股票預測分析或 Java 後端 Restful API 練習。"
         },
         en: {
+            display: "Interface Settings", colorPick: "Custom Theme Color",
             personal: "Personal Info", name: "Full Name", salaryIn: "Expected Salary", 
-            summary: "Summary & Draggable Skills", summaryContent: "Summary (Support Wrap)", skillAdd: "Add Skill",
+            summary: "Summary & Skills", summaryContent: "Summary (Support Wrap)", skillAdd: "Add Skill",
             portfolio: "Portfolio Settings", pfTitle: "Portfolio Title", pfUrl: "Portfolio URL",
             showSummary: "Show Summary", showSalary: "Show Salary", showPortfolio: "Show Portfolio",
             print: "Download / Save PDF", salaryPre: "Expected Salary:", summaryHeader: "Professional Summary",
-            expHeader: "Experience & Education", pfHeader: "Portfolio & Projects"
+            expHeader: "Experience & Education", pfHeader: "Portfolio & Projects",
+            // Dynamic Content
+            phName: "Full Name", phSalary: "e.g. 800000", phSummary: "Press Enter for new line...",
+            phSkill: "e.g. Java, Python", phPFTitle: "GitHub Projects", phPFUrl: "https://github.com/...",
+            btnSkill: "Add", emptyVal: "(Empty)", noUrl: "URL not set",
+            defaultSummary: "Please enter your summary, highlighting your career transition achievements...",
+            defaultExp: "Fill in your experience here...",
+            defaultPFDesc: "Add project descriptions here. e.g., Python stock prediction agent or Java RESTful API development."
         }
     };
 
@@ -171,6 +180,10 @@
 
     function updateLanguage(isEnglish) {
         const lang = isEnglish ? i18n.en : i18n.zh;
+        
+        // 1. 更新編輯面板標籤
+        document.getElementById('labelDisplay').innerText = lang.display;
+        document.getElementById('labelColorPicker').innerText = lang.colorPick;
         document.getElementById('labelPersonal').innerText = lang.personal;
         document.getElementById('labelName').innerText = lang.name;
         document.getElementById('labelSalaryIn').innerText = lang.salaryIn;
@@ -184,10 +197,31 @@
         document.getElementById('labelShowSalary').innerText = lang.showSalary;
         document.getElementById('labelShowPortfolio').innerText = lang.showPortfolio;
         document.getElementById('btnPrint').innerText = lang.print;
+        document.getElementById('btnSkillAdd').innerText = lang.btnSkill;
+        
+        // 2. 更新輸入框的 Placeholder (解決你提到的問題)
+        document.getElementById('inputName').placeholder = lang.phName;
+        document.getElementById('inputSalary').placeholder = lang.phSalary;
+        document.getElementById('inputSummary').placeholder = lang.phSummary;
+        document.getElementById('skillInput').placeholder = lang.phSkill;
+        document.getElementById('inputPFTitle').placeholder = lang.phPFTitle;
+        document.getElementById('inputPFUrl').placeholder = lang.phPFUrl;
+
+        // 3. 預覽區標題同步
         document.getElementById('textSalaryLabel').innerText = lang.salaryPre;
         document.getElementById('preSummaryHeader').innerText = lang.summaryHeader;
         document.getElementById('preExpHeader').innerText = lang.expHeader;
         document.getElementById('prePortfolioHeader').innerText = lang.pfHeader;
+
+        // 4. 預覽區內容自動翻譯 (當沒輸入時顯示預設語系文字)
+        const summary = document.getElementById('inputSummary').value;
+        if(!summary) document.getElementById('preSummary').innerText = lang.defaultSummary;
+        
+        const exp = document.getElementById('expArea').innerText;
+        if(exp === i18n.zh.defaultExp || exp === i18n.en.defaultExp) document.getElementById('expArea').innerText = lang.defaultExp;
+        
+        document.getElementById('prePFDesc').innerText = lang.defaultPFDesc;
+        if(!document.getElementById('inputPFUrl').value) document.getElementById('prePFLink').innerText = lang.noUrl;
     }
 
     function updateThemeColor(color) {
@@ -195,7 +229,8 @@
     }
 
     function sync(id, val) { 
-        document.getElementById(id).innerText = val || '(未填寫)'; 
+        const isEnglish = document.getElementById('langToggle').checked;
+        document.getElementById(id).innerText = val || (isEnglish ? i18n.en.emptyVal : i18n.zh.emptyVal); 
     }
     
     function toggle(id, show) { 
@@ -207,33 +242,25 @@
     }
 
     function updatePFLink(url) {
+        const isEnglish = document.getElementById('langToggle').checked;
         const link = document.getElementById('prePFLink');
         link.href = url;
-        link.innerText = url || '尚未設定網址';
+        link.innerText = url || (isEnglish ? i18n.en.noUrl : i18n.zh.noUrl);
     }
 
-    /* 技能拖拉邏輯 */
     function renderSkills() {
         const editorList = document.getElementById('skillListEditor');
         const resumeTags = document.getElementById('preTags');
         editorList.innerHTML = '';
         resumeTags.innerHTML = '';
-
         skills.forEach((skill, index) => {
-            // 編輯器項目
             const li = document.createElement('li');
             li.className = 'skill-item-editor';
             li.draggable = true;
             li.innerHTML = `<span><span class="drag-handle">☰</span>${skill}</span><span onclick="removeSkill(${index})" style="cursor:pointer; color:red">✕</span>`;
-            
             li.addEventListener('dragstart', () => li.classList.add('dragging'));
-            li.addEventListener('dragend', () => {
-                li.classList.remove('dragging');
-                updateSkillOrder();
-            });
+            li.addEventListener('dragend', () => { li.classList.remove('dragging'); updateSkillOrder(); });
             editorList.appendChild(li);
-
-            // 履歷標籤
             const tag = document.createElement('span');
             tag.className = 'skill-tag-resume';
             tag.innerText = skill;
@@ -243,17 +270,10 @@
 
     function addSkill() {
         const input = document.getElementById('skillInput');
-        if (input.value.trim()) {
-            skills.push(input.value.trim());
-            input.value = '';
-            renderSkills();
-        }
+        if (input.value.trim()) { skills.push(input.value.trim()); input.value = ''; renderSkills(); }
     }
 
-    function removeSkill(index) {
-        skills.splice(index, 1);
-        renderSkills();
-    }
+    function removeSkill(index) { skills.splice(index, 1); renderSkills(); }
 
     function updateSkillOrder() {
         const items = document.querySelectorAll('.skill-item-editor');
@@ -261,16 +281,12 @@
         renderSkills();
     }
 
-    // 拖拉排序輔助
     document.getElementById('skillListEditor').addEventListener('dragover', e => {
         e.preventDefault();
         const afterElement = getDragAfterElement(document.getElementById('skillListEditor'), e.clientY);
         const dragging = document.querySelector('.dragging');
-        if (afterElement == null) {
-            document.getElementById('skillListEditor').appendChild(dragging);
-        } else {
-            document.getElementById('skillListEditor').insertBefore(dragging, afterElement);
-        }
+        if (afterElement == null) document.getElementById('skillListEditor').appendChild(dragging);
+        else document.getElementById('skillListEditor').insertBefore(dragging, afterElement);
     });
 
     function getDragAfterElement(container, y) {
@@ -278,15 +294,11 @@
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
+            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+            else return closest;
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    // 初始化技能列表
     renderSkills();
 </script>
 </body>
