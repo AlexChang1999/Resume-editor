@@ -2,71 +2,59 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>專業多語系履歷編輯器</title>
+    <title>專業轉職流動版履歷編輯器</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-dark: #1a2a3a;
-            --accent-color: #c0392b;
-            --border-color: #d1d5db;
-            --bg-editor: #f3f4f6;
-            --text-main: #374151;
-            --text-light: #6b7280;
-        }
+        :root { --primary-dark: #1a2a3a; --accent-color: #c0392b; --border-color: #d1d5db; --bg-editor: #f3f4f6; --text-main: #374151; --text-light: #6b7280; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg-editor); margin: 0; padding: 20px; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
 
-        body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg-editor); margin: 0; padding: 20px; color: var(--text-main); display: flex; justify-content: center; }
-
-        /* 編輯區 */
-        .editor-panel { width: 500px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-right: 20px; height: 95vh; overflow-y: auto; }
+        /* 編輯面板 */
+        .editor-panel { width: 450px; background: white; padding: 30px; border-radius: 8px; margin-right: 20px; height: 95vh; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: sticky; top: 20px; }
         .control-group { background: #f9fafb; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #eee; }
-        h3 { font-size: 16px; text-transform: uppercase; color: var(--primary-dark); border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 25px; }
+        h3 { font-size: 16px; color: var(--primary-dark); border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 20px; }
         .input-item { margin-bottom: 12px; }
         label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; color: var(--text-light); }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; box-sizing: border-box; font-family: inherit; }
         
-        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 14px; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; }
         .checkbox-group input { width: auto; cursor: pointer; }
 
-        input[type="color"] { appearance: none; -webkit-appearance: none; border: 1px solid var(--border-color); width: 100%; height: 45px; cursor: pointer; background: none; padding: 2px; border-radius: 4px; }
-        .btn { cursor: pointer; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
-        .btn-add { background: #e5e7eb; color: #374151; padding: 8px 12px; font-size: 12px; margin-top: 5px; }
-        .btn-print { background: var(--primary-dark); color: white; width: 100%; padding: 15px; font-size: 16px; margin-top: 30px; }
+        /* 顏色選擇器 */
+        .color-picker-wrapper { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
+        .color-picker { width: 50px; height: 35px; padding: 2px; cursor: pointer; border: 1px solid var(--border-color); border-radius: 4px; }
 
-        /* 預覽區 A4 */
-        .preview-page { width: 210mm; min-height: 297mm; background: white; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box; position: sticky; top: 20px; overflow-y: auto; height: 95vh; }
+        /* 技能拖拉樣式 */
+        .skill-list-editor { list-style: none; padding: 0; margin: 10px 0; border: 1px solid #eee; border-radius: 4px; }
+        .skill-item-editor { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eee; background: white; cursor: grab; }
+        .skill-item-editor:last-child { border-bottom: none; }
+        .skill-item-editor.dragging { opacity: 0.5; background: #f0f0f0; }
+        .skill-item-editor .drag-handle { color: #ccc; margin-right: 10px; }
+        .btn-add-skill { background: var(--text-light); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%; margin-top: 5px; }
 
-        /* 標題與照片佈局 */
-        .resume-header { border-bottom: 3px solid var(--primary-dark); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-start; }
-        .header-text { flex: 1; }
-        .resume-name { font-size: 28px; font-weight: 700; color: var(--primary-dark); margin: 0; letter-spacing: 1px; }
-        .resume-title { font-size: 18px; color: var(--text-light); margin: 5px 0; font-weight: 400; }
-        .resume-contact { font-size: 13px; color: var(--text-light); display: flex; gap: 15px; margin-top: 10px; }
+        .btn-print { background: var(--primary-dark); color: white; width: 100%; padding: 15px; font-size: 16px; margin-top: 20px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
 
-        .photo-container { width: 100px; height: 125px; border: 1px solid #eee; background: #f9fafb; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px; margin-left: 20px; }
-        .photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        /* 預覽區 */
+        .preview-container { width: 210mm; height: 95vh; overflow-y: auto; background: white; padding: 20mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); box-sizing: border-box; }
+
+        .resume-header { border-bottom: 3px solid var(--primary-dark); padding-bottom: 15px; margin-bottom: 20px; }
+        .resume-name { font-size: 28px; font-weight: 700; color: var(--primary-dark); margin: 0; }
+        .resume-contact { font-size: 13px; color: var(--text-light); margin-top: 8px; display: flex; gap: 15px; }
+        
+        /* 換行與技能標籤 */
+        .resume-summary { font-size: 13px; line-height: 1.6; margin: 15px 0 10px; white-space: pre-line; color: var(--text-main); }
+        .skill-tags-view { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .skill-tag-resume { font-size: 12px; color: white; background: var(--primary-dark); padding: 4px 10px; border-radius: 12px; font-weight: 500; }
+
+        .section-header { font-size: 16px; font-weight: 700; color: var(--primary-dark); background: #f3f4f6; padding: 6px 12px; margin: 25px 0 10px; text-transform: uppercase; }
+        .portfolio-section { margin-top: 10px; padding: 15px; border: 1px dashed var(--border-color); border-radius: 4px; }
+        .portfolio-link { color: var(--accent-color); text-decoration: none; font-weight: 500; word-break: break-all; font-size: 14px; }
+
         .hidden { display: none !important; }
 
-        /* 內容區塊 */
-        .section-header { font-size: 16px; font-weight: 700; color: var(--primary-dark); background: #f3f4f6; padding: 6px 12px; margin: 25px 0 15px; text-transform: uppercase; letter-spacing: 1px; }
-        .content-card { padding: 10px 12px; border-radius: 4px; border-left: 3px solid transparent; transition: 0.3s; cursor: pointer; margin-bottom: 10px; }
-        .content-card:hover { background: #f9fafb; }
-        .content-card.selected { border-left-color: var(--accent-color); background: #fff5f5; }
-        .card-row { display: flex; justify-content: space-between; align-items: baseline; }
-        .main-info { font-size: 15px; font-weight: 700; color: #111827; }
-        .date-info { font-size: 13px; color: var(--text-light); }
-        .sub-info { font-size: 14px; color: var(--accent-color); font-weight: 500; margin: 3px 0; }
-        .desc-info { font-size: 13px; color: var(--text-main); line-height: 1.6; white-space: pre-line; margin-top: 8px; }
-
-        .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .skill-item { margin-bottom: 10px; }
-        .skill-label { display: flex; justify-content: space-between; font-size: 13px; }
-        .progress-bg { background: #e5e7eb; height: 6px; border-radius: 3px; overflow: hidden; }
-        .progress-fill { background: var(--primary-dark); height: 100%; }
-
         @media print {
-            .editor-panel { display: none !important; }
-            .preview-page { width: 100%; box-shadow: none; padding: 0; margin: 0; position: static; height: auto; }
-            .content-card.selected { background: #fff5f5 !important; -webkit-print-color-adjust: exact; }
+            body { background: white; padding: 0; overflow: visible; height: auto; }
+            .editor-panel { display: none; }
+            .preview-container { box-shadow: none; margin: 0; width: 100%; padding: 15mm; height: auto; overflow: visible; }
         }
     </style>
 </head>
@@ -74,195 +62,232 @@
 
 <div class="editor-panel">
     <div class="control-group">
-        <label>履歷顯示設定</label>
-        
+        <label id="labelDisplay">介面與顯示設定</label>
+        <div class="color-picker-wrapper">
+            <input type="color" class="color-picker" id="colorPicker" value="#1a2a3a" oninput="updateThemeColor(this.value)">
+            <span style="font-size: 12px; color: #888;">自訂主題顏色</span>
+        </div>
         <div class="checkbox-group">
             <input type="checkbox" id="langToggle" onchange="updateLanguage(this.checked)">
-            <label for="langToggle">使用英文版界面 (English Version)</label>
+            <label for="langToggle">使用英文版界面 (English)</label>
         </div>
-
         <div class="checkbox-group">
-            <input type="checkbox" id="toggleSalary" checked onchange="toggleVisibility('preSalaryWrapper', this.checked)">
-            <label for="toggleSalary">顯示期待年薪</label>
+            <input type="checkbox" id="checkSummary" checked onchange="toggle('preSummarySection', this.checked)">
+            <label id="labelShowSummary">顯示自我簡介</label>
         </div>
-
         <div class="checkbox-group">
-            <input type="checkbox" id="togglePhoto" checked onchange="toggleVisibility('photoBox', this.checked)">
-            <label for="togglePhoto">顯示大頭照</label>
+            <input type="checkbox" id="toggleSalary" checked onchange="toggle('preSalaryWrapper', this.checked)">
+            <label id="labelShowSalary">顯示期待年薪</label>
         </div>
-
-        <div class="input-item">
-            <label>自定義強調色</label>
-            <input type="color" id="themeColor" value="#c0392b" oninput="updateThemeColor(this.value)">
-        </div>
-
-        <div class="input-item">
-            <label>上傳照片</label>
-            <input type="file" accept="image/*" onchange="handlePhotoUpload(this)">
+        <div class="checkbox-group">
+            <input type="checkbox" id="checkPortfolio" checked onchange="toggle('prePortfolioSection', this.checked)">
+            <label id="labelShowPortfolio">顯示作品集區塊</label>
         </div>
     </div>
 
     <h3 id="labelPersonal">個人資訊</h3>
-    <div class="input-item"><label id="labelName">姓名</label><input type="text" placeholder="Alex Chen" oninput="sync('preName', this.value)"></div>
-    <div class="input-item"><label id="labelJob">專業稱謂</label><input type="text" placeholder="Java 後端工程師" oninput="sync('preTitle', this.value)"></div>
-    <div class="input-item"><label>Email</label><input type="text" oninput="sync('preEmail', this.value)" placeholder="alex.chen@example.com"></div>
-    <div class="input-item"><label id="labelSalaryIn">期待年薪</label><input type="number" oninput="updateSalary(this.value)" placeholder="800000"></div>
+    <div class="input-item"><label id="labelName">姓名</label><input type="text" value="ALEX CHEN" oninput="sync('preName', this.value)"></div>
+    <div class="input-item"><label>Email</label><input type="text" value="alex.chen@example.com" oninput="sync('preEmail', this.value)"></div>
+    <div class="input-item"><label id="labelSalaryIn">期待年薪</label><input type="number" placeholder="800000" oninput="updateSalary(this.value)"></div>
 
-    <h3 id="labelEduTitle">教育背景</h3>
-    <div id="eduEditorList"></div>
-    <button class="btn btn-add" onclick="addEdu()">+ Add Education</button>
+    <h3 id="labelSummaryTitle">自我簡介 & 拖拉技能</h3>
+    <div class="input-item">
+        <label id="labelSummaryContent">簡介內容 (支援換行)</label>
+        <textarea rows="5" oninput="sync('preSummary', this.value)" placeholder="按 Enter 鍵可直接換行..."></textarea>
+    </div>
+    
+    <div class="input-item">
+        <label id="labelSkillAdd">新增專業技能</label>
+        <div style="display: flex; gap: 5px;">
+            <input type="text" id="skillInput" placeholder="例如: Java, Python">
+            <button style="width: 80px;" onclick="addSkill()">新增</button>
+        </div>
+        <ul class="skill-list-editor" id="skillListEditor"></ul>
+    </div>
 
-    <h3 id="labelExpTitle">工作經歷</h3>
-    <div id="expEditorList"></div>
-    <button class="btn btn-add" onclick="addExp()">+ Add Experience</button>
+    <h3 id="labelPortfolio">作品集設定</h3>
+    <div class="input-item"><label id="labelPFTitleIn">作品集標題</label><input type="text" placeholder="GitHub 專案展示" oninput="sync('prePFTitle', this.value)"></div>
+    <div class="input-item"><label id="labelPFUrl">作品集網址</label><input type="text" placeholder="https://github.com/..." oninput="updatePFLink(this.value)"></div>
 
-    <h3 id="labelSkillTitle">專業技能</h3>
-    <div id="skillEditorList"></div>
-    <button class="btn btn-add" onclick="addSkill()">+ Add Skill</button>
-
-    <button class="btn btn-print" id="btnPrint" onclick="window.print()">下載/列印 PDF 履歷</button>
+    <button class="btn-print" id="btnPrint" onclick="window.print()">下載 / 儲存 PDF</button>
 </div>
 
-<div class="preview-page">
+<div class="preview-container">
     <div class="resume-header">
-        <div class="header-text">
-            <h1 id="preName" class="resume-name">ALEX CHEN</h1>
-            <p id="preTitle" class="resume-title">Java 後端工程師</p>
-            <div class="resume-contact">
-                <span id="preEmail">alex.chen@example.com</span>
-                <span id="preSalaryWrapper">
-                    <span>|</span>
-                    <span id="textSalaryLabel">期待年薪:</span> <span id="preSalary">800,000</span> TWD
-                </span>
-            </div>
-        </div>
-        <div id="photoBox" class="photo-container">
-            <img id="prePhoto" src="" alt="Photo" class="hidden">
-            <span id="photoPlaceholder" style="font-size: 10px; color: #ccc;">PHOTO</span>
+        <h1 id="preName" class="resume-name">ALEX CHEN</h1>
+        <div class="resume-contact">
+            <span id="preEmail">alex.chen@example.com</span>
+            <span id="preSalaryWrapper">
+                <span>|</span>
+                <span id="textSalaryLabel">期待年薪:</span> <span id="preSalary">800,000</span> TWD
+            </span>
         </div>
     </div>
 
-    <div class="section-header" id="preEduHeader">教育背景</div>
-    <div id="preEdu"></div>
+    <div id="preSummarySection">
+        <div class="section-header" id="preSummaryHeader">自我簡介</div>
+        <div id="preSummary" class="resume-summary">請輸入您的個人簡介，建議強調轉職成果...</div>
+        <div id="preTags" class="skill-tags-view"></div>
+    </div>
 
-    <div class="section-header" id="preExpHeader">工作經歷</div>
-    <div id="preExp"></div>
+    <div class="section-header" id="preExpHeader">經歷與教育</div>
+    <div id="expArea" style="min-height: 50px; font-size: 13px; color: #888;">
+        請在此處填寫經歷...
+    </div>
 
-    <div class="section-header" id="preSkillHeader">專業技能</div>
-    <div id="preSkills" class="skill-grid"></div>
+    <div id="prePortfolioSection">
+        <div class="section-header" id="prePortfolioHeader">作品集與補充資料</div>
+        <div class="portfolio-section">
+            <h4 id="prePFTitle" style="margin-top: 0;">GitHub 專案展示</h4>
+            <a id="prePFLink" class="portfolio-link" href="#" target="_blank">尚未設定網址</a>
+            <p style="font-size: 13px; color: var(--text-main); margin-top: 10px; line-height: 1.6;">
+                這裡可以放入專案說明。例如：Python 股票預測分析或 Java 後端 Restful API 練習。
+            </p>
+        </div>
+    </div>
 </div>
 
 <script>
-    // 語系字典
     const i18n = {
         zh: {
-            personal: "個人資訊", name: "姓名", job: "專業稱謂", salaryIn: "期待年薪",
-            edu: "教育背景", exp: "工作經歷", skill: "專業技能",
-            salaryPre: "期待年薪:", print: "下載/列印 PDF 履歷"
+            personal: "個人資訊", name: "姓名", salaryIn: "期待年薪", 
+            summary: "自我簡介 & 拖拉技能", summaryContent: "簡介內容 (支援換行)", skillAdd: "新增專業技能",
+            portfolio: "作品集設定", pfTitle: "作品集標題", pfUrl: "作品集網址",
+            showSummary: "顯示自我簡介", showSalary: "顯示期待年薪", showPortfolio: "顯示作品集區塊",
+            print: "下載 / 儲存 PDF", salaryPre: "期待年薪:", summaryHeader: "自我簡介", 
+            expHeader: "經歷與教育", pfHeader: "作品集與補充資料"
         },
         en: {
-            personal: "Personal Info", name: "Full Name", job: "Job Title", salaryIn: "Expected Salary",
-            edu: "Education", exp: "Work Experience", skill: "Professional Skills",
-            salaryPre: "Expected Salary:", print: "Download / Print PDF"
+            personal: "Personal Info", name: "Full Name", salaryIn: "Expected Salary", 
+            summary: "Summary & Draggable Skills", summaryContent: "Summary (Support Wrap)", skillAdd: "Add Skill",
+            portfolio: "Portfolio Settings", pfTitle: "Portfolio Title", pfUrl: "Portfolio URL",
+            showSummary: "Show Summary", showSalary: "Show Salary", showPortfolio: "Show Portfolio",
+            print: "Download / Save PDF", salaryPre: "Expected Salary:", summaryHeader: "Professional Summary",
+            expHeader: "Experience & Education", pfHeader: "Portfolio & Projects"
         }
     };
+
+    let skills = ['Java', 'SpringBoot', 'Python'];
 
     function updateLanguage(isEnglish) {
         const lang = isEnglish ? i18n.en : i18n.zh;
         document.getElementById('labelPersonal').innerText = lang.personal;
         document.getElementById('labelName').innerText = lang.name;
-        document.getElementById('labelJob').innerText = lang.job;
         document.getElementById('labelSalaryIn').innerText = lang.salaryIn;
-        document.getElementById('labelEduTitle').innerText = lang.edu;
-        document.getElementById('labelExpTitle').innerText = lang.exp;
-        document.getElementById('labelSkillTitle').innerText = lang.skill;
+        document.getElementById('labelSummaryTitle').innerText = lang.summary;
+        document.getElementById('labelSummaryContent').innerText = lang.summaryContent;
+        document.getElementById('labelSkillAdd').innerText = lang.skillAdd;
+        document.getElementById('labelPortfolio').innerText = lang.portfolio;
+        document.getElementById('labelPFTitleIn').innerText = lang.pfTitle;
+        document.getElementById('labelPFUrl').innerText = lang.pfUrl;
+        document.getElementById('labelShowSummary').innerText = lang.showSummary;
+        document.getElementById('labelShowSalary').innerText = lang.showSalary;
+        document.getElementById('labelShowPortfolio').innerText = lang.showPortfolio;
         document.getElementById('btnPrint').innerText = lang.print;
-
-        // 預覽區標題
         document.getElementById('textSalaryLabel').innerText = lang.salaryPre;
-        document.getElementById('preEduHeader').innerText = lang.edu;
-        document.getElementById('preExpHeader').innerText = lang.exp;
-        document.getElementById('preSkillHeader').innerText = lang.skill;
+        document.getElementById('preSummaryHeader').innerText = lang.summaryHeader;
+        document.getElementById('preExpHeader').innerText = lang.expHeader;
+        document.getElementById('prePortfolioHeader').innerText = lang.pfHeader;
     }
 
-    // 基礎邏輯
-    function sync(id, val) { document.getElementById(id).innerText = val || '(未填寫)'; }
-    function updateSalary(val) { document.getElementById('preSalary').innerText = val ? Number(val).toLocaleString() : '---'; }
-    function updateThemeColor(color) { document.documentElement.style.setProperty('--accent-color', color); }
+    function updateThemeColor(color) {
+        document.documentElement.style.setProperty('--primary-dark', color);
+    }
+
+    function sync(id, val) { 
+        document.getElementById(id).innerText = val || '(未填寫)'; 
+    }
     
-    function toggleVisibility(id, show) {
-        const el = document.getElementById(id);
-        if (show) el.classList.remove('hidden');
-        else el.classList.add('hidden');
+    function toggle(id, show) { 
+        document.getElementById(id).classList.toggle('hidden', !show); 
     }
 
-    function handlePhotoUpload(input) {
-        const file = input.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = document.getElementById('prePhoto');
-                img.src = e.target.result;
-                img.classList.remove('hidden');
-                document.getElementById('photoPlaceholder').classList.add('hidden');
-            };
-            reader.readAsDataURL(file);
-        }
+    function updateSalary(val) { 
+        document.getElementById('preSalary').innerText = val ? Number(val).toLocaleString() : '---'; 
     }
 
-    // 教育經歷、工作經歷、技能 (延用前版本逻辑)
-    function addEdu() {
-        const div = document.createElement('div');
-        div.className = 'control-group';
-        div.innerHTML = `<input type="text" class="ed-school" placeholder="School" oninput="updateEdu()"><input type="text" class="ed-major" placeholder="Major" oninput="updateEdu()"><input type="text" class="ed-date" placeholder="Date" oninput="updateEdu()">`;
-        document.getElementById('eduEditorList').appendChild(div);
+    function updatePFLink(url) {
+        const link = document.getElementById('prePFLink');
+        link.href = url;
+        link.innerText = url || '尚未設定網址';
     }
-    function updateEdu() {
-        const schools = document.querySelectorAll('.ed-school'), majors = document.querySelectorAll('.ed-major'), dates = document.querySelectorAll('.ed-date');
-        let html = '';
-        schools.forEach((s, i) => {
-            html += `<div class="content-card" onclick="this.classList.toggle('selected')">
-                <div class="card-row"><div class="main-info">${s.value || 'School'}</div><div class="date-info">${dates[i].value || 'Date'}</div></div>
-                <div class="sub-info">${majors[i].value || 'Degree'}</div></div>`;
+
+    /* 技能拖拉邏輯 */
+    function renderSkills() {
+        const editorList = document.getElementById('skillListEditor');
+        const resumeTags = document.getElementById('preTags');
+        editorList.innerHTML = '';
+        resumeTags.innerHTML = '';
+
+        skills.forEach((skill, index) => {
+            // 編輯器項目
+            const li = document.createElement('li');
+            li.className = 'skill-item-editor';
+            li.draggable = true;
+            li.innerHTML = `<span><span class="drag-handle">☰</span>${skill}</span><span onclick="removeSkill(${index})" style="cursor:pointer; color:red">✕</span>`;
+            
+            li.addEventListener('dragstart', () => li.classList.add('dragging'));
+            li.addEventListener('dragend', () => {
+                li.classList.remove('dragging');
+                updateSkillOrder();
+            });
+            editorList.appendChild(li);
+
+            // 履歷標籤
+            const tag = document.createElement('span');
+            tag.className = 'skill-tag-resume';
+            tag.innerText = skill;
+            resumeTags.appendChild(tag);
         });
-        document.getElementById('preEdu').innerHTML = html;
-    }
-
-    function addExp() {
-        const div = document.createElement('div');
-        div.className = 'control-group';
-        div.innerHTML = `<input type="text" class="ex-comp" placeholder="Company" oninput="updateExp()"><input type="text" class="ex-pos" placeholder="Position" oninput="updateExp()"><textarea class="ex-desc" rows="3" placeholder="Achievements" oninput="updateExp()"></textarea>`;
-        document.getElementById('expEditorList').appendChild(div);
-    }
-    function updateExp() {
-        const comps = document.querySelectorAll('.ex-comp'), pos = document.querySelectorAll('.ex-pos'), descs = document.querySelectorAll('.ex-desc');
-        let html = '';
-        comps.forEach((c, i) => {
-            html += `<div class="content-card" onclick="this.classList.toggle('selected')">
-                <div class="card-row"><div class="main-info">${c.value || 'Company'}</div></div>
-                <div class="sub-info">${pos[i].value || 'Position'}</div><div class="desc-info">${descs[i].value || ''}</div></div>`;
-        });
-        document.getElementById('preExp').innerHTML = html;
     }
 
     function addSkill() {
-        const div = document.createElement('div');
-        div.className = 'input-item'; div.style.display = "flex"; div.style.gap = "10px";
-        div.innerHTML = `<input type="text" class="sk-name" oninput="updateSkills()" style="flex:2;"> <input type="range" class="sk-val" min="0" max="100" oninput="updateSkills()" style="flex:1;">`;
-        document.getElementById('skillEditorList').appendChild(div);
-    }
-    function updateSkills() {
-        const names = document.querySelectorAll('.sk-name'), vals = document.querySelectorAll('.sk-val');
-        let html = '';
-        names.forEach((n, i) => {
-            html += `<div class="skill-item"><div class="skill-label"><span>${n.value || 'Skill'}</span><span>${vals[i].value}%</span></div>
-                <div class="progress-bg"><div class="progress-fill" style="width:${vals[i].value}%"></div></div></div>`;
-        });
-        document.getElementById('preSkills').innerHTML = html;
+        const input = document.getElementById('skillInput');
+        if (input.value.trim()) {
+            skills.push(input.value.trim());
+            input.value = '';
+            renderSkills();
+        }
     }
 
-    // 初始化
-    updateEdu(); updateExp(); updateSkills();
+    function removeSkill(index) {
+        skills.splice(index, 1);
+        renderSkills();
+    }
+
+    function updateSkillOrder() {
+        const items = document.querySelectorAll('.skill-item-editor');
+        skills = Array.from(items).map(item => item.innerText.replace('☰', '').replace('✕', '').trim());
+        renderSkills();
+    }
+
+    // 拖拉排序輔助
+    document.getElementById('skillListEditor').addEventListener('dragover', e => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(document.getElementById('skillListEditor'), e.clientY);
+        const dragging = document.querySelector('.dragging');
+        if (afterElement == null) {
+            document.getElementById('skillListEditor').appendChild(dragging);
+        } else {
+            document.getElementById('skillListEditor').insertBefore(dragging, afterElement);
+        }
+    });
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.skill-item-editor:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // 初始化技能列表
+    renderSkills();
 </script>
 </body>
 </html>
