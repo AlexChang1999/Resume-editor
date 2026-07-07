@@ -56,6 +56,9 @@
         .skill-tag-resume { font-size: 12px; color: white; background: var(--primary-dark); padding: 4px 10px; border-radius: 12px; }
 
         .btn-print { background: #2ecc71; color: white; width: 100%; padding: 15px; font-size: 16px; margin-top: 30px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
+        .btn-reset { background: white; color: #ef4444; border: 1px solid #ef4444; width: 100%; padding: 10px; font-size: 14px; margin-top: 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .backup-row { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-backup { background: white; color: var(--primary-dark); border: 1px solid var(--primary-dark); flex: 1; padding: 10px; font-size: 14px; cursor: pointer; border-radius: 4px; font-weight: bold; }
         .hidden { display: none !important; }
 
         /* 列印模式優化 */
@@ -130,6 +133,12 @@
     <input type="text" id="inputPFUrl" placeholder="https://github.com/..." oninput="updatePFLink(this.value)">
 
     <button class="btn-print" onclick="window.print()">下載 / 儲存 PDF</button>
+    <div class="backup-row">
+        <button class="btn-backup" onclick="exportJSON()">匯出備份 (JSON)</button>
+        <button class="btn-backup" onclick="document.getElementById('importFile').click()">匯入備份</button>
+    </div>
+    <input type="file" id="importFile" accept=".json,application/json" class="hidden" onchange="importJSON(this)">
+    <button class="btn-reset" onclick="clearAllData()">清除資料 / 重設</button>
 </div>
 
 <div class="preview-scroll">
@@ -223,13 +232,14 @@
                 const img = document.getElementById('prePhoto');
                 img.src = e.target.result;
                 if (document.getElementById('togglePhoto').checked) img.classList.add('active');
+                scheduleSave(); // change 事件在 base64 讀完前就觸發，這裡要再存一次才能存到照片
             };
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    function addItem(type) { data[type].push({ title: '', org: '', time: '', desc: '' }); renderAll(); }
-    function removeItem(type, index) { data[type].splice(index, 1); renderAll(); }
+    function addItem(type) { data[type].push({ title: '', org: '', time: '', desc: '' }); renderAll(); scheduleSave(); }
+    function removeItem(type, index) { data[type].splice(index, 1); renderAll(); scheduleSave(); }
     function updateItem(type, index, field, val) { data[type][index][field] = val; renderPreviewList(type); }
 
     function renderAll() {
@@ -277,15 +287,179 @@
         });
     }
 
-    function addSkill() { const input = document.getElementById('skillInput'); if (input.value.trim()) { skills.push(input.value.trim()); input.value = ''; renderSkills(); } }
-    function removeSkill(index) { skills.splice(index, 1); renderSkills(); }
+    function addSkill() { const input = document.getElementById('skillInput'); if (input.value.trim()) { skills.push(input.value.trim()); input.value = ''; renderSkills(); scheduleSave(); } }
+    function removeSkill(index) { skills.splice(index, 1); renderSkills(); scheduleSave(); }
     function updatePFLink(val) {
         const link = document.getElementById('prePFLink');
         link.href = val.startsWith('http') ? val : 'https://' + val;
         link.innerText = val || (document.getElementById('langToggle').checked ? i18n.en.noUrl : i18n.zh.noUrl);
     }
 
-    updateLanguage(false);
+    // ===== 自動儲存功能 =====
+    // 注意：localStorage 依網域 (origin) 隔離，file:// 本機測試存的資料
+    // 不會出現在 GitHub Pages 網站上，反之亦然。
+    const STORAGE_KEY = 'resumeEditorData';
+    let saveTimer = null;
+    let photoWarned = false; // 照片存不進去的提醒，每次開頁面最多跳一次
+
+    // 把目前所有編輯內容收集成一個純物件（也是 JSON 匯出/匯入的共同格式）
+    function collectState() {
+        const photoSrc = document.getElementById('prePhoto').src;
+        return {
+            version: 1, // schema 版本，未來格式變更時用來判斷是否需要轉換
+            savedAt: new Date().toISOString(),
+            settings: {
+                themeColor: document.getElementById('colorPicker').value,
+                isEnglish: document.getElementById('langToggle').checked,
+                showPhoto: document.getElementById('togglePhoto').checked,
+                showSalary: document.getElementById('toggleSalary').checked,
+                showPF: document.getElementById('togglePF').checked
+            },
+            profile: {
+                name: document.getElementById('inputName').value,
+                email: document.getElementById('inputEmail').value,
+                salary: document.getElementById('inputSalary').value,
+                summary: document.getElementById('inputSummary').value,
+                pfUrl: document.getElementById('inputPFUrl').value,
+                photo: photoSrc.startsWith('data:') ? photoSrc : null
+            },
+            skills: skills,
+            exp: data.exp,
+            edu: data.edu
+        };
+    }
+
+    // debounce：輸入停止 500ms 後才真正寫入，避免每敲一個字就存一次
+    function scheduleSave() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveState, 500);
+    }
+
+    function saveState() {
+        try {
+            const state = collectState();
+            // localStorage 上限約 5MB，照片 base64 太大會塞不下，先做大小防護
+            if (state.profile.photo && state.profile.photo.length > 2000000) {
+                state.profile.photo = null;
+                if (!photoWarned) {
+                    photoWarned = true;
+                    alert('照片過大，無法自動儲存照片，重新整理後需重新上傳（可改用「匯出備份」保留照片）');
+                }
+            }
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                // 空間不足 (QuotaExceededError)：去掉照片再試一次
+                state.profile.photo = null;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                if (!photoWarned) {
+                    photoWarned = true;
+                    alert('儲存空間不足，照片未被儲存');
+                }
+            }
+        } catch (e) {
+            // localStorage 完全不可用（例如隱私模式）：退化成不儲存，不影響編輯
+        }
+    }
+
+    // 把儲存的物件寫回畫面。順序重要：先還原陣列，
+    // 最後才呼叫 updateLanguage()（它會 renderAll() 用還原後的陣列重繪清單）
+    function applyState(saved) {
+        skills = saved.skills;
+        data.exp = saved.exp;
+        data.edu = saved.edu;
+
+        document.getElementById('inputName').value = saved.profile.name;
+        document.getElementById('inputEmail').value = saved.profile.email;
+        document.getElementById('inputSalary').value = saved.profile.salary;
+        document.getElementById('inputSummary').value = saved.profile.summary;
+        document.getElementById('inputPFUrl').value = saved.profile.pfUrl;
+        document.getElementById('colorPicker').value = saved.settings.themeColor;
+        document.getElementById('langToggle').checked = saved.settings.isEnglish;
+        document.getElementById('togglePhoto').checked = saved.settings.showPhoto;
+        document.getElementById('toggleSalary').checked = saved.settings.showSalary;
+        document.getElementById('togglePF').checked = saved.settings.showPF;
+
+        updateThemeColor(saved.settings.themeColor);
+        sync('preName', saved.profile.name);
+        sync('preEmail', saved.profile.email);
+        sync('preSummary', saved.profile.summary);
+        updateSalary(saved.profile.salary);
+        updatePFLink(saved.profile.pfUrl);
+        if (saved.profile.photo) document.getElementById('prePhoto').src = saved.profile.photo;
+        togglePhotoVisibility(saved.settings.showPhoto);
+        toggleSalaryVisibility(saved.settings.showSalary);
+        togglePFVisibility(saved.settings.showPF);
+        updateLanguage(saved.settings.isEnglish);
+    }
+
+    function loadState() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) { updateLanguage(false); return; } // 第一次使用：載入預設值
+            const saved = JSON.parse(raw);
+            if (saved.version !== 1) throw new Error('unknown version');
+            applyState(saved);
+        } catch (e) {
+            // 資料損毀或版本不符：清掉舊資料，改用預設值（絕不能讓頁面掛掉）
+            try { localStorage.removeItem(STORAGE_KEY); } catch (e2) {}
+            updateLanguage(false);
+        }
+    }
+
+    function clearAllData() {
+        if (confirm('確定要清除所有資料嗎？此動作無法復原。')) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+    }
+
+    // ===== JSON 匯出 / 匯入 =====
+    // 匯出檔沒有 localStorage 的 5MB 限制，所以永遠包含照片
+    // （照片太大存不進 localStorage 時，匯出備份就是保留照片的方法）
+    function exportJSON() {
+        const blob = new Blob([JSON.stringify(collectState(), null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const d = new Date();
+        const stamp = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+        a.href = url;
+        a.download = 'resume-backup-' + stamp + '.json';
+        a.click();
+        URL.revokeObjectURL(url); // 釋放暫時的物件 URL，避免記憶體洩漏
+    }
+
+    function importJSON(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                // 基本格式驗證：版本要對、三個清單必須是陣列
+                if (parsed.version !== 1 || !Array.isArray(parsed.skills) ||
+                    !Array.isArray(parsed.exp) || !Array.isArray(parsed.edu)) {
+                    throw new Error('bad format');
+                }
+                if (confirm('匯入將覆蓋目前內容，確定？')) {
+                    applyState(parsed);
+                    saveState(); // 匯入後立刻寫進 localStorage，重新整理也不會掉
+                }
+            } catch (err) {
+                alert('檔案格式錯誤，無法匯入');
+            }
+            input.value = ''; // 重設 file input，讓同一個檔案可以再次匯入
+        };
+        reader.readAsText(file);
+    }
+
+    // 事件委派：在左側面板掛一組 listener，涵蓋所有輸入框
+    // （包含之後動態產生的經歷/教育欄位），inline handler 完全不用改
+    const editorPanel = document.querySelector('.editor-panel');
+    editorPanel.addEventListener('input', scheduleSave);
+    editorPanel.addEventListener('change', scheduleSave);
+
+    loadState();
 </script>
 </body>
 </html>
