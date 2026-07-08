@@ -50,16 +50,16 @@
         .page-break-label { position: absolute; right: 0; transform: translateY(-100%); font-size: 10px; color: var(--accent-color); background: white; padding: 2px 8px; border-radius: 4px 0 0 4px; white-space: nowrap; box-shadow: 0 -1px 3px rgba(0,0,0,0.15); }
         
         /* 內容樣式 */
-        .resume-header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--primary-dark); padding-bottom: 15px; margin-bottom: 20px; }
+        .resume-header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--primary-dark); padding-bottom: 15px; margin-bottom: 20px; break-inside: avoid; page-break-inside: avoid; }
         .photo-view { width: 100px; height: 120px; object-fit: cover; border: 1px solid #eee; border-radius: 4px; display: none; margin-left: 20px; }
         .photo-view.active { display: block; }
         .resume-name { font-size: 32px; font-weight: 700; color: var(--primary-dark); margin: 0; }
         .resume-contact { font-size: 13px; color: var(--text-light); margin-top: 8px; display: flex; gap: 15px; flex-wrap: wrap; }
-        .section-header { font-size: 16px; font-weight: 700; color: var(--primary-dark); background: #f3f4f6; padding: 6px 12px; margin: 20px 0 10px; text-transform: uppercase; }
-        .item-row { display: flex; justify-content: space-between; font-weight: 700; color: var(--text-main); margin-top: 12px; font-size: 14px; }
-        .item-sub { color: var(--accent-color); font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-        .item-desc { font-size: 13px; line-height: 1.6; white-space: pre-line; color: var(--text-main); margin-bottom: 10px; }
-        .entry-block { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+        .section-header { font-size: 16px; font-weight: 700; color: var(--primary-dark); background: #f3f4f6; padding: 6px 12px; margin: 20px 0 10px; text-transform: uppercase; break-after: avoid; page-break-after: avoid; break-inside: avoid; page-break-inside: avoid; }
+        .item-row { display: flex; justify-content: space-between; font-weight: 700; color: var(--text-main); margin-top: 0; font-size: 14px; }
+        .item-sub { color: var(--accent-color); font-size: 13px; font-weight: 600; margin: 2px 0 6px; }
+        .item-desc { font-size: 13px; line-height: 1.6; white-space: pre-line; color: var(--text-main); margin-bottom: 0; }
+        .entry-block { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #eee; break-inside: avoid; page-break-inside: avoid; }
         .entry-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .skill-tags-view { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
         .skill-tag-resume { font-size: 12px; color: white; background: var(--primary-dark); padding: 4px 10px; border-radius: 12px; }
@@ -278,7 +278,13 @@
     }
     function updateSalary(val) { document.getElementById('preSalary').innerText = val ? Number(val).toLocaleString() : '---'; }
     function toggleSalaryVisibility(show) { document.getElementById('preSalaryWrapper').classList.toggle('hidden', !show); }
-    function togglePhotoVisibility(show) { document.getElementById('prePhoto').classList.toggle('active', show && document.getElementById('prePhoto').src); }
+    function togglePhotoVisibility(show) {
+        // <img src=""> 在瀏覽器裡 .src 會被解析成目前頁面網址（非空字串），
+        // 單純判斷 truthy 會永遠成立，導致沒上傳照片也顯示一個破圖框佔位。
+        // 改用 data: URL 前綴判斷是否真的有上傳照片。
+        const hasRealPhoto = document.getElementById('prePhoto').src.indexOf('data:') === 0;
+        document.getElementById('prePhoto').classList.toggle('active', show && hasRealPhoto);
+    }
 
     function handlePhoto(input) {
         if (input.files[0]) {
@@ -441,19 +447,61 @@
         pageGuideTimer = setTimeout(renderPageGuides, 50);
     }
 
+    // 找出畫面上「不可被硬切開」的區塊範圍（配合 CSS 的 break-inside/break-after: avoid），
+    // 讓分頁參考線跟瀏覽器實際列印時的真正分頁行為一致：
+    // - 每個經歷/教育條目（.entry-block）整塊不拆
+    // - 小節標題跟緊接著的第一塊內容黏在一起，不會有標題孤兒留在頁尾
+    function collectAtomicUnits() {
+        const units = [];
+        const push = (topEl, bottomEl) => {
+            if (!topEl || !bottomEl) return;
+            units.push({ top: topEl.offsetTop, bottom: bottomEl.offsetTop + bottomEl.offsetHeight });
+        };
+
+        push(document.querySelector('.resume-header-flex'), document.querySelector('.resume-header-flex'));
+
+        const sumHeader = document.getElementById('preSummaryHeader');
+        const tags = document.getElementById('preTags');
+        push(sumHeader, tags);
+
+        [['preExpHeaderView', 'preExpList'], ['preEduHeaderView', 'preEduList']].forEach(([headerId, listId]) => {
+            const header = document.getElementById(headerId);
+            const list = document.getElementById(listId);
+            if (!header || !list) return;
+            const entries = Array.from(list.children);
+            if (entries.length === 0) { push(header, header); return; }
+            push(header, entries[0]); // 標題跟第一條黏住，避免孤兒標題
+            entries.slice(1).forEach(entry => push(entry, entry));
+        });
+
+        const pfSection = document.getElementById('pfSection');
+        if (pfSection && !pfSection.classList.contains('hidden')) {
+            push(document.getElementById('prePFHeader'), document.getElementById('prePFList'));
+        }
+
+        return units.sort((a, b) => a.top - b.top);
+    }
+
     function renderPageGuides() {
         const page = document.getElementById('resumePage1');
         const guides = document.getElementById('pageGuides');
         const pageHeightPx = parseFloat(getComputedStyle(page).minHeight);
         if (!pageHeightPx) return;
-        const totalHeight = page.scrollHeight;
-        const pageCount = Math.max(1, Math.ceil(totalHeight / pageHeightPx));
+
+        const units = collectAtomicUnits();
+        let pageStart = 0;
+        let pageNum = 1;
         let html = '';
-        for (let i = 1; i < pageCount; i++) {
-            const top = i * pageHeightPx;
-            html += `<div class="page-break-line" style="top:${top}px"></div>`
-                 + `<div class="page-break-label" style="top:${top}px">第 ${i} / ${i + 1} 頁分頁處</div>`;
-        }
+        units.forEach(u => {
+            const pageBottom = pageStart + pageHeightPx;
+            // 這個區塊放不進目前這頁 → 整塊推到下一頁（分頁線畫在區塊開頭，不是硬切在 297mm 整數倍上）
+            if (u.bottom > pageBottom && u.top > pageStart) {
+                html += `<div class="page-break-line" style="top:${u.top}px"></div>`
+                     + `<div class="page-break-label" style="top:${u.top}px">第 ${pageNum} / ${pageNum + 1} 頁分頁處</div>`;
+                pageStart = u.top;
+                pageNum++;
+            }
+        });
         guides.innerHTML = html;
     }
 
@@ -588,6 +636,13 @@
 
     loadState();
     renderPageGuides();
+    // 網頁字型（Noto Sans TC）非同步載入完成後文字尺寸可能改變，
+    // 版面重排會讓一開始算好的分頁線位置跟實際不符，字型就緒後要重算一次
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(renderPageGuides);
+    }
+    // 視窗大小改變（例如縮放）也可能讓文字換行方式不同，需重新計算分頁線
+    window.addEventListener('resize', schedulePageGuides);
 </script>
 </body>
 </html>
