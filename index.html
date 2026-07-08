@@ -112,6 +112,7 @@
     <div class="input-item"><label>大頭貼上傳</label><input type="file" accept="image/*" onchange="handlePhoto(this)"></div>
     <div class="input-item"><label id="labelName">姓名</label><input type="text" id="inputName" value="ALEX CHEN" oninput="sync('preName', this.value)"></div>
     <div class="input-item"><label id="labelEmail">Email</label><input type="text" id="inputEmail" value="alex.chen@example.com" oninput="sync('preEmail', this.value)"></div>
+    <div class="input-item"><label id="labelPhone">電話</label><input type="text" id="inputPhone" placeholder="0912-345-678" oninput="updatePhone(this.value)"></div>
     <div class="input-item"><label id="labelSalaryIn">期待年薪</label><input type="number" id="inputSalary" placeholder="800000" oninput="updateSalary(this.value)"></div>
 
     <h3 id="labelSummaryTitle">自我簡介 & 技能</h3>
@@ -130,7 +131,8 @@
     <button class="btn-add" onclick="addItem('edu')">+ 新增教育</button>
 
     <h3 id="labelPortfolio">作品集網址</h3>
-    <input type="text" id="inputPFUrl" placeholder="https://github.com/..." oninput="updatePFLink(this.value)">
+    <div id="pfListEditor"></div>
+    <button class="btn-add" id="btnAddPF" onclick="addPF()">+ 新增連結</button>
 
     <button class="btn-print" onclick="window.print()">下載 / 儲存 PDF</button>
     <div class="backup-row">
@@ -148,6 +150,7 @@
                 <h1 id="preName" class="resume-name">ALEX CHEN</h1>
                 <div class="resume-contact">
                     <span id="preEmail">alex.chen@example.com</span>
+                    <span id="prePhoneWrapper">| <span id="prePhone"></span></span>
                     <span id="preSalaryWrapper">| <span id="textSalaryLabel">期待年薪:</span> <span id="preSalary">800,000</span> TWD</span>
                 </div>
             </div>
@@ -166,7 +169,7 @@
 
         <div id="pfSection">
             <div class="section-header" id="prePFHeader">作品集連結</div>
-            <a id="prePFLink" style="color:var(--accent-color); font-weight:bold; text-decoration:none; font-size:14px" href="#" target="_blank">尚未設定網址</a>
+            <div id="prePFList" style="display:flex; flex-direction:column; gap:4px"></div>
         </div>
     </div>
 </div>
@@ -175,24 +178,27 @@
     const i18n = {
         zh: {
             display: "介面與顯示設定", lang: "使用英文界面 (English)", showSalary: "顯示期待薪資", showPhoto: "顯示大頭貼", showPF: "顯示作品集網址",
-            personal: "個人資訊", name: "姓名", email: "Email", salaryIn: "期待年薪",
+            personal: "個人資訊", name: "姓名", email: "Email", phone: "電話", salaryIn: "期待年薪",
             summary: "自我簡介 & 技能", expHeader: "工作經歷", eduHeader: "教育程度", portfolio: "作品集網址",
             salaryPre: "期待年薪:", summaryHeader: "專業概覽", expView: "工作經歷", eduView: "教育背景", pfHeader: "作品集連結",
-            phTitle: "職位 / 學位", phOrg: "單位 / 學校", phTime: "年份", phDesc: "成就描述...", noUrl: "尚未設定網址", empty: "(未填寫)"
+            phTitle: "職位 / 學位", phOrg: "單位 / 學校", phTime: "年份", phDesc: "成就描述...", noUrl: "尚未設定網址", empty: "(未填寫)",
+            pfLabelPh: "名稱（如 GitHub）", pfUrlPh: "https://...", btnAddPF: "+ 新增連結"
         },
         en: {
             display: "Settings", lang: "English UI", showSalary: "Show Salary", showPhoto: "Show Photo", showPF: "Show Portfolio",
-            personal: "Personal", name: "Name", email: "Email", salaryIn: "Salary",
+            personal: "Personal", name: "Name", email: "Email", phone: "Phone", salaryIn: "Salary",
             summary: "Summary & Skills", expHeader: "Work Experience", eduHeader: "Education", portfolio: "Portfolio URL",
             salaryPre: "Expected Salary:", summaryHeader: "Summary", expView: "Experience", eduView: "Education", pfHeader: "Portfolio",
-            phTitle: "Title", phOrg: "Org", phTime: "Period", phDesc: "Details...", noUrl: "Not Set", empty: "(Empty)"
+            phTitle: "Title", phOrg: "Org", phTime: "Period", phDesc: "Details...", noUrl: "Not Set", empty: "(Empty)",
+            pfLabelPh: "Label (e.g. GitHub)", pfUrlPh: "https://...", btnAddPF: "+ Add Link"
         }
     };
 
     let skills = ['Java', 'SpringBoot', 'Python'];
     let data = {
         exp: [{ title: 'Backend Developer', org: 'Tech Inc.', time: '2025 - Present', desc: 'API design...' }],
-        edu: [{ title: 'B.B.A.', org: 'University', time: '2018 - 2022', desc: 'Major in Biz.' }]
+        edu: [{ title: 'B.B.A.', org: 'University', time: '2018 - 2022', desc: 'Major in Biz.' }],
+        pf: [{ label: 'GitHub', url: '' }]
     };
 
     function updateLanguage(isEnglish) {
@@ -205,6 +211,7 @@
         document.getElementById('labelPersonal').innerText = lang.personal;
         document.getElementById('labelName').innerText = lang.name;
         document.getElementById('labelEmail').innerText = lang.email;
+        document.getElementById('labelPhone').innerText = lang.phone;
         document.getElementById('labelSalaryIn').innerText = lang.salaryIn;
         document.getElementById('labelSummaryTitle').innerText = lang.summary;
         document.getElementById('labelExpHeader').innerText = lang.expHeader;
@@ -215,12 +222,17 @@
         document.getElementById('preExpHeaderView').innerText = lang.expView;
         document.getElementById('preEduHeaderView').innerText = lang.eduView;
         document.getElementById('prePFHeader').innerText = lang.pfHeader;
+        document.getElementById('btnAddPF').innerText = lang.btnAddPF;
         renderAll();
     }
 
     function togglePFVisibility(show) { document.getElementById('pfSection').classList.toggle('hidden', !show); }
     function updateThemeColor(color) { document.documentElement.style.setProperty('--primary-dark', color); }
     function sync(id, val) { document.getElementById(id).innerText = val || (document.getElementById('langToggle').checked ? i18n.en.empty : i18n.zh.empty); }
+    function updatePhone(val) {
+        document.getElementById('prePhone').innerText = val;
+        document.getElementById('prePhoneWrapper').classList.toggle('hidden', !val);
+    }
     function updateSalary(val) { document.getElementById('preSalary').innerText = val ? Number(val).toLocaleString() : '---'; }
     function toggleSalaryVisibility(show) { document.getElementById('preSalaryWrapper').classList.toggle('hidden', !show); }
     function togglePhotoVisibility(show) { document.getElementById('prePhoto').classList.toggle('active', show && document.getElementById('prePhoto').src); }
@@ -246,6 +258,7 @@
         renderEditorList('exp'); renderEditorList('edu');
         renderPreviewList('exp'); renderPreviewList('edu');
         renderSkills();
+        renderPF();
     }
 
     function renderEditorList(type) {
@@ -289,10 +302,34 @@
 
     function addSkill() { const input = document.getElementById('skillInput'); if (input.value.trim()) { skills.push(input.value.trim()); input.value = ''; renderSkills(); scheduleSave(); } }
     function removeSkill(index) { skills.splice(index, 1); renderSkills(); scheduleSave(); }
-    function updatePFLink(val) {
-        const link = document.getElementById('prePFLink');
-        link.href = val.startsWith('http') ? val : 'https://' + val;
-        link.innerText = val || (document.getElementById('langToggle').checked ? i18n.en.noUrl : i18n.zh.noUrl);
+
+    // ===== 作品集連結（可新增多筆） =====
+    function addPF() { data.pf.push({ label: '', url: '' }); renderPF(); scheduleSave(); }
+    function removePF(index) { data.pf.splice(index, 1); renderPF(); scheduleSave(); }
+    function updatePFItem(index, field, val) { data.pf[index][field] = val; renderPFPreview(); }
+
+    function renderPF() { renderPFEditor(); renderPFPreview(); }
+
+    function renderPFEditor() {
+        const lang = document.getElementById('langToggle').checked ? i18n.en : i18n.zh;
+        document.getElementById('pfListEditor').innerHTML = data.pf.map((item, i) => `
+            <div class="dynamic-list-item">
+                <span class="btn-remove" onclick="removePF(${i})">✕</span>
+                <input type="text" placeholder="${lang.pfLabelPh}" value="${item.label}" oninput="updatePFItem(${i}, 'label', this.value)">
+                <input type="text" placeholder="${lang.pfUrlPh}" value="${item.url}" oninput="updatePFItem(${i}, 'url', this.value)">
+            </div>
+        `).join('');
+    }
+
+    // 使用者網址可能沒打 http(s)://，補上才會是可點擊的絕對網址（不然預設會被瀏覽器當成相對路徑）
+    function normalizeUrl(url) { return /^https?:\/\//i.test(url) ? url : 'https://' + url; }
+
+    function renderPFPreview() {
+        const lang = document.getElementById('langToggle').checked ? i18n.en : i18n.zh;
+        const list = data.pf.filter(item => item.url.trim());
+        document.getElementById('prePFList').innerHTML = list.length ? list.map(item => `
+            <a href="${normalizeUrl(item.url)}" target="_blank" rel="noopener" style="color:var(--accent-color); font-weight:bold; text-decoration:none; font-size:14px">${item.label || item.url}</a>
+        `).join('') : `<span style="color:var(--text-light); font-size:13px">${lang.noUrl}</span>`;
     }
 
     // ===== 自動儲存功能 =====
@@ -318,14 +355,15 @@
             profile: {
                 name: document.getElementById('inputName').value,
                 email: document.getElementById('inputEmail').value,
+                phone: document.getElementById('inputPhone').value,
                 salary: document.getElementById('inputSalary').value,
                 summary: document.getElementById('inputSummary').value,
-                pfUrl: document.getElementById('inputPFUrl').value,
                 photo: photoSrc.startsWith('data:') ? photoSrc : null
             },
             skills: skills,
             exp: data.exp,
-            edu: data.edu
+            edu: data.edu,
+            pf: data.pf
         };
     }
 
@@ -368,12 +406,14 @@
         skills = saved.skills;
         data.exp = saved.exp;
         data.edu = saved.edu;
+        // 舊資料只有單一 pfUrl 欄位：搬進新的 pf 陣列，讓舊備份也能正常匯入
+        data.pf = Array.isArray(saved.pf) ? saved.pf : (saved.profile.pfUrl ? [{ label: 'Portfolio', url: saved.profile.pfUrl }] : []);
 
         document.getElementById('inputName').value = saved.profile.name;
         document.getElementById('inputEmail').value = saved.profile.email;
+        document.getElementById('inputPhone').value = saved.profile.phone || '';
         document.getElementById('inputSalary').value = saved.profile.salary;
         document.getElementById('inputSummary').value = saved.profile.summary;
-        document.getElementById('inputPFUrl').value = saved.profile.pfUrl;
         document.getElementById('colorPicker').value = saved.settings.themeColor;
         document.getElementById('langToggle').checked = saved.settings.isEnglish;
         document.getElementById('togglePhoto').checked = saved.settings.showPhoto;
@@ -383,9 +423,9 @@
         updateThemeColor(saved.settings.themeColor);
         sync('preName', saved.profile.name);
         sync('preEmail', saved.profile.email);
+        updatePhone(saved.profile.phone || '');
         sync('preSummary', saved.profile.summary);
         updateSalary(saved.profile.salary);
-        updatePFLink(saved.profile.pfUrl);
         if (saved.profile.photo) document.getElementById('prePhoto').src = saved.profile.photo;
         togglePhotoVisibility(saved.settings.showPhoto);
         toggleSalaryVisibility(saved.settings.showSalary);
@@ -396,13 +436,14 @@
     function loadState() {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) { updateLanguage(false); return; } // 第一次使用：載入預設值
+            if (!raw) { updatePhone(''); updateLanguage(false); return; } // 第一次使用：載入預設值
             const saved = JSON.parse(raw);
             if (saved.version !== 1) throw new Error('unknown version');
             applyState(saved);
         } catch (e) {
             // 資料損毀或版本不符：清掉舊資料，改用預設值（絕不能讓頁面掛掉）
             try { localStorage.removeItem(STORAGE_KEY); } catch (e2) {}
+            updatePhone('');
             updateLanguage(false);
         }
     }
