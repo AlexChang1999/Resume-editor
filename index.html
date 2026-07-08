@@ -29,7 +29,7 @@
         .btn-remove { color: #ef4444; cursor: pointer; font-size: 12px; position: absolute; top: 10px; right: 10px; font-weight: bold; }
 
         /* 預覽區 - 直接分頁結構 */
-        .preview-scroll { flex-grow: 1; height: 100vh; overflow-y: auto; background: #525659; padding: 40px 0; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .preview-scroll { flex-grow: 1; height: 100vh; overflow-y: auto; background: #525659; padding: 40px 0; }
         
         /* A4 紙張本體 */
         .preview-container { 
@@ -40,7 +40,14 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.3); 
             box-sizing: border-box; 
             position: relative;
+            margin: 0 auto;
         }
+
+        /* 分頁參考線：純視覺輔助，標出每 297mm（一張 A4）在哪裡結束，
+           讓使用者在螢幕上就知道印出來的 PDF 會在哪裡分頁；不影響實際列印內容 */
+        #pageGuides { position: absolute; top: 0; left: 0; width: 100%; height: 0; pointer-events: none; }
+        .page-break-line { position: absolute; left: 0; width: 100%; border-top: 2px dashed rgba(192,57,43,0.55); }
+        .page-break-label { position: absolute; right: 0; transform: translateY(-100%); font-size: 10px; color: var(--accent-color); background: white; padding: 2px 8px; border-radius: 4px 0 0 4px; white-space: nowrap; box-shadow: 0 -1px 3px rgba(0,0,0,0.15); }
         
         /* 內容樣式 */
         .resume-header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--primary-dark); padding-bottom: 15px; margin-bottom: 20px; }
@@ -80,6 +87,7 @@
             /* 最後一頁不需要強行分頁 */
             .preview-container:last-child { page-break-after: auto !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            #pageGuides { display: none !important; }
         }
     </style>
 </head>
@@ -175,6 +183,8 @@
             <div class="section-header" id="prePFHeader">作品集連結</div>
             <div id="prePFList" style="display:flex; flex-direction:column; gap:4px"></div>
         </div>
+
+        <div id="pageGuides"></div>
     </div>
 </div>
 
@@ -417,6 +427,34 @@
     function scheduleSave() {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(saveState, 500);
+        schedulePageGuides();
+    }
+
+    // ===== 分頁參考線 =====
+    // 內容變動後（不管是打字、換頁籤語言、新增/刪除項目…）都要重算分頁線位置，
+    // 統一掛在 scheduleSave 上（所有會改動內容的地方本來就都會呼叫它），不用每個
+    // render 函式各自補一次呼叫。用短防抖是因為這是純視覺回饋，希望使用者一邊打字
+    // 就幾乎即時看到分頁線跟著移動，跟「500ms 才存檔」的節流目的不同。
+    let pageGuideTimer = null;
+    function schedulePageGuides() {
+        clearTimeout(pageGuideTimer);
+        pageGuideTimer = setTimeout(renderPageGuides, 50);
+    }
+
+    function renderPageGuides() {
+        const page = document.getElementById('resumePage1');
+        const guides = document.getElementById('pageGuides');
+        const pageHeightPx = parseFloat(getComputedStyle(page).minHeight);
+        if (!pageHeightPx) return;
+        const totalHeight = page.scrollHeight;
+        const pageCount = Math.max(1, Math.ceil(totalHeight / pageHeightPx));
+        let html = '';
+        for (let i = 1; i < pageCount; i++) {
+            const top = i * pageHeightPx;
+            html += `<div class="page-break-line" style="top:${top}px"></div>`
+                 + `<div class="page-break-label" style="top:${top}px">第 ${i} / ${i + 1} 頁分頁處</div>`;
+        }
+        guides.innerHTML = html;
     }
 
     function saveState() {
@@ -549,6 +587,7 @@
     editorPanel.addEventListener('change', scheduleSave);
 
     loadState();
+    renderPageGuides();
 </script>
 </body>
 </html>
