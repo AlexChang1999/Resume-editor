@@ -302,9 +302,19 @@
                 <input type="text" placeholder="${lang.phTitle}" value="${item.title}" oninput="updateItem('${type}', ${i}, 'title', this.value)">
                 <input type="text" placeholder="${lang.phOrg}" value="${item.org}" oninput="updateItem('${type}', ${i}, 'org', this.value)">
                 <input type="text" placeholder="${lang.phTime}" value="${item.time}" oninput="updateItem('${type}', ${i}, 'time', this.value)">
-                <textarea placeholder="${lang.phDesc}" oninput="updateItem('${type}', ${i}, 'desc', this.value)">${item.desc}</textarea>
+                <textarea placeholder="${lang.phDesc}" rows="3" oninput="updateItem('${type}', ${i}, 'desc', this.value); autoGrowTextarea(this)">${item.desc}</textarea>
             </div>
         `).join('');
+        document.querySelectorAll(`#${type}ListEditor textarea`).forEach(autoGrowTextarea);
+    }
+
+    // 描述框內容多行時自動長高，避免固定小高度的 textarea 自己出現內部捲軸，
+    // 導致滑鼠移到該欄位時滾輪被它吃掉、無法繼續往下捲動編輯面板
+    function autoGrowTextarea(el) {
+        el.style.height = 'auto';
+        // +2px 緩衝：border-box 下 clientHeight 會比 scrollHeight 少個 1-2px（邊框計算誤差），
+        // 沒補這一點會導致「長高後」內容還差最後一絲高度、textarea 仍判定為可捲動而吃掉滾輪
+        el.style.height = (el.scrollHeight + 2) + 'px';
     }
 
     function renderPreviewList(type) {
