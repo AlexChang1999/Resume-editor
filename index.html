@@ -52,6 +52,8 @@
         .item-row { display: flex; justify-content: space-between; font-weight: 700; color: var(--text-main); margin-top: 12px; font-size: 14px; }
         .item-sub { color: var(--accent-color); font-size: 13px; font-weight: 600; margin-bottom: 4px; }
         .item-desc { font-size: 13px; line-height: 1.6; white-space: pre-line; color: var(--text-main); margin-bottom: 10px; }
+        .entry-block { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+        .entry-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .skill-tags-view { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
         .skill-tag-resume { font-size: 12px; color: white; background: var(--primary-dark); padding: 4px 10px; border-radius: 12px; }
 
@@ -114,6 +116,7 @@
     <div class="input-item"><label id="labelEmail">Email</label><input type="text" id="inputEmail" value="alex.chen@example.com" oninput="sync('preEmail', this.value)"></div>
     <div class="input-item"><label id="labelPhone">電話</label><input type="text" id="inputPhone" placeholder="0912-345-678" oninput="updatePhone(this.value)"></div>
     <div class="input-item"><label id="labelSalaryIn">期待年薪</label><input type="number" id="inputSalary" placeholder="800000" oninput="updateSalary(this.value)"></div>
+    <div class="input-item"><label id="labelMilitary">兵役狀況（選填）</label><select id="inputMilitary" onchange="updateMilitary(this.value)"></select></div>
 
     <h3 id="labelSummaryTitle">自我簡介 & 技能</h3>
     <div class="input-item"><textarea id="inputSummary" rows="4" oninput="sync('preSummary', this.value)"></textarea></div>
@@ -151,6 +154,7 @@
                 <div class="resume-contact">
                     <span id="preEmail">alex.chen@example.com</span>
                     <span id="prePhoneWrapper">| <span id="prePhone"></span></span>
+                    <span id="preMilitaryWrapper" class="hidden">| <span id="preMilitary"></span></span>
                     <span id="preSalaryWrapper">| <span id="textSalaryLabel">期待年薪:</span> <span id="preSalary">800,000</span> TWD</span>
                 </div>
             </div>
@@ -178,7 +182,7 @@
     const i18n = {
         zh: {
             display: "介面與顯示設定", lang: "使用英文界面 (English)", showSalary: "顯示期待薪資", showPhoto: "顯示大頭貼", showPF: "顯示作品集網址",
-            personal: "個人資訊", name: "姓名", email: "Email", phone: "電話", salaryIn: "期待年薪",
+            personal: "個人資訊", name: "姓名", email: "Email", phone: "電話", salaryIn: "期待年薪", military: "兵役狀況（選填）",
             summary: "自我簡介 & 技能", expHeader: "工作經歷", eduHeader: "教育程度", portfolio: "作品集網址",
             salaryPre: "期待年薪:", summaryHeader: "專業概覽", expView: "工作經歷", eduView: "教育背景", pfHeader: "作品集連結",
             phTitle: "職位 / 學位", phOrg: "單位 / 學校", phTime: "年份", phDesc: "成就描述...", noUrl: "尚未設定網址", empty: "(未填寫)",
@@ -186,13 +190,23 @@
         },
         en: {
             display: "Settings", lang: "English UI", showSalary: "Show Salary", showPhoto: "Show Photo", showPF: "Show Portfolio",
-            personal: "Personal", name: "Name", email: "Email", phone: "Phone", salaryIn: "Salary",
+            personal: "Personal", name: "Name", email: "Email", phone: "Phone", salaryIn: "Salary", military: "Military Service (optional)",
             summary: "Summary & Skills", expHeader: "Work Experience", eduHeader: "Education", portfolio: "Portfolio URL",
             salaryPre: "Expected Salary:", summaryHeader: "Summary", expView: "Experience", eduView: "Education", pfHeader: "Portfolio",
             phTitle: "Title", phOrg: "Org", phTime: "Period", phDesc: "Details...", noUrl: "Not Set", empty: "(Empty)",
             pfLabelPh: "Label (e.g. GitHub)", pfUrlPh: "https://...", btnAddPF: "+ Add Link"
         }
     };
+
+    // 兵役狀況：中華民國男性求職履歷常見欄位，女性/外籍/未達役齡通常填「不適用」或乾脆留空不顯示
+    const militaryOptions = [
+        { value: '', zh: '不顯示', en: 'Not Shown' },
+        { value: 'completed', zh: '役畢', en: 'Completed' },
+        { value: 'exempted', zh: '免役', en: 'Exempted' },
+        { value: 'substitute', zh: '替代役', en: 'Alternative Service' },
+        { value: 'pending', zh: '尚未服役', en: 'Pending' },
+        { value: 'na', zh: '不適用', en: 'N/A' }
+    ];
 
     let skills = ['Java', 'SpringBoot', 'Python'];
     let data = {
@@ -213,6 +227,9 @@
         document.getElementById('labelEmail').innerText = lang.email;
         document.getElementById('labelPhone').innerText = lang.phone;
         document.getElementById('labelSalaryIn').innerText = lang.salaryIn;
+        document.getElementById('labelMilitary').innerText = lang.military;
+        renderMilitaryOptions();
+        updateMilitary(document.getElementById('inputMilitary').value);
         document.getElementById('labelSummaryTitle').innerText = lang.summary;
         document.getElementById('labelExpHeader').innerText = lang.expHeader;
         document.getElementById('labelEduHeader').innerText = lang.eduHeader;
@@ -224,6 +241,22 @@
         document.getElementById('prePFHeader').innerText = lang.pfHeader;
         document.getElementById('btnAddPF').innerText = lang.btnAddPF;
         renderAll();
+    }
+
+    // 換語言時下拉選項文字要重畫，但選到的 value 要保留
+    function renderMilitaryOptions() {
+        const isEnglish = document.getElementById('langToggle').checked;
+        const select = document.getElementById('inputMilitary');
+        const current = select.value;
+        select.innerHTML = militaryOptions.map(opt => `<option value="${opt.value}">${isEnglish ? opt.en : opt.zh}</option>`).join('');
+        select.value = current;
+    }
+
+    function updateMilitary(val) {
+        const isEnglish = document.getElementById('langToggle').checked;
+        const opt = militaryOptions.find(o => o.value === val);
+        document.getElementById('preMilitary').innerText = opt ? (isEnglish ? opt.en : opt.zh) : '';
+        document.getElementById('preMilitaryWrapper').classList.toggle('hidden', !val);
     }
 
     function togglePFVisibility(show) { document.getElementById('pfSection').classList.toggle('hidden', !show); }
@@ -275,8 +308,10 @@
     }
 
     function renderPreviewList(type) {
-        document.getElementById(`pre${type.charAt(0).toUpperCase() + type.slice(1)}List`).innerHTML = data[type].map(item => `
-            <div style="margin-bottom: 12px;">
+        // 履歷慣例新到舊：輸入順序仍照你打字的先後（陣列本身不變），
+        // 只在預覽時複製一份反轉，index 對應的 removeItem/updateItem 不受影響
+        document.getElementById(`pre${type.charAt(0).toUpperCase() + type.slice(1)}List`).innerHTML = [...data[type]].reverse().map(item => `
+            <div class="entry-block">
                 <div class="item-row"><span>${item.title}</span><span>${item.time}</span></div>
                 <div class="item-sub">${item.org}</div>
                 <div class="item-desc">${item.desc}</div>
@@ -357,6 +392,7 @@
                 email: document.getElementById('inputEmail').value,
                 phone: document.getElementById('inputPhone').value,
                 salary: document.getElementById('inputSalary').value,
+                military: document.getElementById('inputMilitary').value,
                 summary: document.getElementById('inputSummary').value,
                 photo: photoSrc.startsWith('data:') ? photoSrc : null
             },
@@ -414,6 +450,8 @@
         document.getElementById('inputPhone').value = saved.profile.phone || '';
         document.getElementById('inputSalary').value = saved.profile.salary;
         document.getElementById('inputSummary').value = saved.profile.summary;
+        renderMilitaryOptions();
+        document.getElementById('inputMilitary').value = saved.profile.military || '';
         document.getElementById('colorPicker').value = saved.settings.themeColor;
         document.getElementById('langToggle').checked = saved.settings.isEnglish;
         document.getElementById('togglePhoto').checked = saved.settings.showPhoto;
