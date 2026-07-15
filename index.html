@@ -134,24 +134,24 @@
         <div style="display:flex; gap:5px">
             <input type="text" id="skillCatInput" placeholder="分類（如 前端）" style="flex:1">
             <input type="text" id="skillInput" placeholder="技能名稱" style="flex:1">
-            <button onclick="addSkill()">新增</button>
+            <button id="btnAddSkill" onclick="addSkill()">新增</button>
         </div>
         <ul class="skill-list-editor" id="skillListEditor"></ul>
     </div>
 
     <h3 id="labelExpHeader">工作經歷</h3>
     <div id="expListEditor"></div>
-    <button class="btn-add" onclick="addItem('exp')">+ 新增經歷</button>
+    <button class="btn-add" id="btnAddExp" onclick="addItem('exp')">+ 新增經歷</button>
 
     <h3 id="labelEduHeader">教育程度</h3>
     <div id="eduListEditor"></div>
-    <button class="btn-add" onclick="addItem('edu')">+ 新增教育</button>
+    <button class="btn-add" id="btnAddEdu" onclick="addItem('edu')">+ 新增教育</button>
 
     <h3 id="labelPortfolio">作品集網址</h3>
     <div id="pfListEditor"></div>
     <button class="btn-add" id="btnAddPF" onclick="addPF()">+ 新增連結</button>
 
-    <button class="btn-print" onclick="window.print()">下載 / 儲存 PDF</button>
+    <button class="btn-print" id="btnPrint" onclick="window.print()">下載 / 儲存 PDF</button>
     <div class="backup-row">
         <button class="btn-backup" onclick="exportJSON()">匯出備份 (JSON)</button>
         <button class="btn-backup" onclick="document.getElementById('importFile').click()">匯入備份</button>
@@ -203,7 +203,8 @@
             salaryPre: "期待年薪:", summaryHeader: "專業概覽", expView: "工作經歷", eduView: "教育背景", pfHeader: "作品集連結",
             phTitle: "職位 / 學位", phOrg: "單位 / 學校", phTime: "年份", phDesc: "成就描述...", noUrl: "尚未設定網址", empty: "(未填寫)",
             pfLabelPh: "名稱（如 GitHub）", pfUrlPh: "https://...", btnAddPF: "+ 新增連結",
-            skillCatPh: "分類（如 前端）", skillNamePh: "技能名稱"
+            skillCatPh: "分類（如 前端）", skillNamePh: "技能名稱", btnAddSkill: "新增",
+            btnAddExp: "+ 新增經歷", btnAddEdu: "+ 新增教育", btnPrint: "下載 / 儲存 PDF"
         },
         en: {
             display: "Settings", lang: "English UI", showSalary: "Show Salary", showPhoto: "Show Photo", showPF: "Show Portfolio",
@@ -212,7 +213,8 @@
             salaryPre: "Expected Salary:", summaryHeader: "Summary", expView: "Experience", eduView: "Education", pfHeader: "Portfolio",
             phTitle: "Title", phOrg: "Org", phTime: "Period", phDesc: "Details...", noUrl: "Not Set", empty: "(Empty)",
             pfLabelPh: "Label (e.g. GitHub)", pfUrlPh: "https://...", btnAddPF: "+ Add Link",
-            skillCatPh: "Category (e.g. Frontend)", skillNamePh: "Skill name"
+            skillCatPh: "Category (e.g. Frontend)", skillNamePh: "Skill name", btnAddSkill: "Add",
+            btnAddExp: "+ Add Experience", btnAddEdu: "+ Add Education", btnPrint: "Download / Save PDF"
         }
     };
 
@@ -264,6 +266,10 @@
         document.getElementById('btnAddPF').innerText = lang.btnAddPF;
         document.getElementById('skillCatInput').placeholder = lang.skillCatPh;
         document.getElementById('skillInput').placeholder = lang.skillNamePh;
+        document.getElementById('btnAddSkill').innerText = lang.btnAddSkill;
+        document.getElementById('btnAddExp').innerText = lang.btnAddExp;
+        document.getElementById('btnAddEdu').innerText = lang.btnAddEdu;
+        document.getElementById('btnPrint').innerText = lang.btnPrint;
         renderAll();
     }
 
