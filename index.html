@@ -432,7 +432,7 @@
         const lang = document.getElementById('langToggle').checked ? i18n.en : i18n.zh;
         const list = data.pf.filter(item => item.url.trim());
         document.getElementById('prePFList').innerHTML = list.length ? list.map(item => `
-            <a href="${normalizeUrl(item.url)}" target="_blank" rel="noopener" style="color:#1a73e8; text-decoration:underline; font-size:14px">${item.url}</a>
+            <span style="font-size:14px">${item.label ? `<b style="color:var(--primary-dark)">${item.label}：</b>` : ''}<a href="${normalizeUrl(item.url)}" target="_blank" rel="noopener" style="color:#1a73e8; text-decoration:underline">${item.url}</a></span>
         `).join('') : `<span style="color:var(--text-light); font-size:13px">${lang.noUrl}</span>`;
     }
 
