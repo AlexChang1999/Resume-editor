@@ -147,6 +147,10 @@
     <div id="eduListEditor"></div>
     <button class="btn-add" onclick="addItem('edu')">+ 新增教育</button>
 
+    <h3 id="labelCertsHeader">證照 / 語言能力</h3>
+    <div id="certsListEditor"></div>
+    <button class="btn-add" onclick="addItem('certs')">+ 新增證照 / 語言能力</button>
+
     <h3 id="labelPortfolio">作品集網址</h3>
     <div id="pfListEditor"></div>
     <button class="btn-add" id="btnAddPF" onclick="addPF()">+ 新增連結</button>
@@ -188,6 +192,9 @@
         <div class="section-header" id="preEduHeaderView">教育背景</div>
         <div id="preEduList"></div>
 
+        <div class="section-header" id="preCertsHeaderView">證照 / 語言能力</div>
+        <div id="preCertsList"></div>
+
         <div id="pfSection">
             <div class="section-header" id="prePFHeader">作品集連結</div>
             <div id="prePFList" style="display:flex; flex-direction:column; gap:4px"></div>
@@ -210,7 +217,9 @@
             phTitle: "職位 / 學位", phOrg: "單位 / 學校", phTime: "年份", phDesc: "成就描述...", noUrl: "尚未設定網址", empty: "(未填寫)",
             pfLabelPh: "名稱（如 GitHub）", pfUrlPh: "https://...", btnAddPF: "+ 新增連結",
             skillCatPh: "分類（如 前端）", skillNamePh: "技能名稱",
-            coverLetterHeader: "自傳", coverLetterView: "自傳"
+            coverLetterHeader: "自傳", coverLetterView: "自傳",
+            certsHeader: "證照 / 語言能力", certsView: "證照 / 語言能力",
+            certsPhTitle: "證照 / 語言測驗名稱", certsPhOrg: "發證機構 / 測驗機構", certsPhTime: "取得日期 / 成績", certsPhDesc: "備註（選填）"
         },
         en: {
             display: "Settings", lang: "English UI", showSalary: "Show Salary", showPhoto: "Show Photo", showPF: "Show Portfolio",
@@ -220,7 +229,9 @@
             phTitle: "Title", phOrg: "Org", phTime: "Period", phDesc: "Details...", noUrl: "Not Set", empty: "(Empty)",
             pfLabelPh: "Label (e.g. GitHub)", pfUrlPh: "https://...", btnAddPF: "+ Add Link",
             skillCatPh: "Category (e.g. Frontend)", skillNamePh: "Skill name",
-            coverLetterHeader: "Cover Letter", coverLetterView: "Cover Letter"
+            coverLetterHeader: "Cover Letter", coverLetterView: "Cover Letter",
+            certsHeader: "Certifications / Languages", certsView: "Certifications / Languages",
+            certsPhTitle: "Certificate / Test Name", certsPhOrg: "Issuing Org / Test Provider", certsPhTime: "Date / Score", certsPhDesc: "Notes (optional)"
         }
     };
 
@@ -242,6 +253,7 @@
     let data = {
         exp: [{ title: 'Backend Developer', org: 'Tech Inc.', time: '2025 - Present', desc: 'API design...' }],
         edu: [{ title: 'B.B.A.', org: 'University', time: '2018 - 2022', desc: 'Major in Biz.' }],
+        certs: [{ title: 'TOEIC', org: 'ETS', time: '2024', desc: '900' }],
         pf: [{ label: 'GitHub', url: '' }]
     };
 
@@ -268,6 +280,8 @@
         document.getElementById('preSummaryHeader').innerText = lang.summaryHeader;
         document.getElementById('preExpHeaderView').innerText = lang.expView;
         document.getElementById('preEduHeaderView').innerText = lang.eduView;
+        document.getElementById('labelCertsHeader').innerText = lang.certsHeader;
+        document.getElementById('preCertsHeaderView').innerText = lang.certsView;
         document.getElementById('prePFHeader').innerText = lang.pfHeader;
         document.getElementById('btnAddPF').innerText = lang.btnAddPF;
         document.getElementById('labelCoverLetterHeader').innerText = lang.coverLetterHeader;
@@ -328,21 +342,25 @@
     function updateItem(type, index, field, val) { data[type][index][field] = val; renderPreviewList(type); }
 
     function renderAll() {
-        renderEditorList('exp'); renderEditorList('edu');
-        renderPreviewList('exp'); renderPreviewList('edu');
+        renderEditorList('exp'); renderEditorList('edu'); renderEditorList('certs');
+        renderPreviewList('exp'); renderPreviewList('edu'); renderPreviewList('certs');
         renderSkills();
         renderPF();
     }
 
     function renderEditorList(type) {
         const lang = document.getElementById('langToggle').checked ? i18n.en : i18n.zh;
+        // 證照/語言能力欄位意義跟經歷/學歷不同，用專屬 placeholder 文字
+        const ph = type === 'certs'
+            ? { title: lang.certsPhTitle, org: lang.certsPhOrg, time: lang.certsPhTime, desc: lang.certsPhDesc }
+            : { title: lang.phTitle, org: lang.phOrg, time: lang.phTime, desc: lang.phDesc };
         document.getElementById(`${type}ListEditor`).innerHTML = data[type].map((item, i) => `
             <div class="dynamic-list-item">
                 <span class="btn-remove" onclick="removeItem('${type}', ${i})">✕</span>
-                <input type="text" placeholder="${lang.phTitle}" value="${item.title}" oninput="updateItem('${type}', ${i}, 'title', this.value)">
-                <input type="text" placeholder="${lang.phOrg}" value="${item.org}" oninput="updateItem('${type}', ${i}, 'org', this.value)">
-                <input type="text" placeholder="${lang.phTime}" value="${item.time}" oninput="updateItem('${type}', ${i}, 'time', this.value)">
-                <textarea placeholder="${lang.phDesc}" rows="3" oninput="updateItem('${type}', ${i}, 'desc', this.value); autoGrowTextarea(this)">${item.desc}</textarea>
+                <input type="text" placeholder="${ph.title}" value="${item.title}" oninput="updateItem('${type}', ${i}, 'title', this.value)">
+                <input type="text" placeholder="${ph.org}" value="${item.org}" oninput="updateItem('${type}', ${i}, 'org', this.value)">
+                <input type="text" placeholder="${ph.time}" value="${item.time}" oninput="updateItem('${type}', ${i}, 'time', this.value)">
+                <textarea placeholder="${ph.desc}" rows="3" oninput="updateItem('${type}', ${i}, 'desc', this.value); autoGrowTextarea(this)">${item.desc}</textarea>
             </div>
         `).join('');
         document.querySelectorAll(`#${type}ListEditor textarea`).forEach(autoGrowTextarea);
@@ -479,6 +497,7 @@
             skills: skills,
             exp: data.exp,
             edu: data.edu,
+            certs: data.certs,
             pf: data.pf
         };
     }
@@ -518,7 +537,7 @@
         const tags = document.getElementById('preTags');
         push(sumHeader, tags);
 
-        [['preExpHeaderView', 'preExpList'], ['preEduHeaderView', 'preEduList']].forEach(([headerId, listId]) => {
+        [['preExpHeaderView', 'preExpList'], ['preEduHeaderView', 'preEduList'], ['preCertsHeaderView', 'preCertsList']].forEach(([headerId, listId]) => {
             const header = document.getElementById(headerId);
             const list = document.getElementById(listId);
             if (!header || !list) return;
@@ -595,6 +614,8 @@
         skills = saved.skills.map(s => typeof s === 'string' ? { category: '', name: s } : s);
         data.exp = saved.exp;
         data.edu = saved.edu;
+        // 舊備份沒有 certs 欄位（此區塊為後補功能）：預設空陣列，讓舊備份能正常匯入
+        data.certs = Array.isArray(saved.certs) ? saved.certs : [];
         // 舊資料只有單一 pfUrl 欄位：搬進新的 pf 陣列，讓舊備份也能正常匯入
         data.pf = Array.isArray(saved.pf) ? saved.pf : (saved.profile.pfUrl ? [{ label: 'Portfolio', url: saved.profile.pfUrl }] : []);
 
