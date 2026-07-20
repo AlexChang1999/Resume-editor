@@ -151,6 +151,9 @@
     <div id="pfListEditor"></div>
     <button class="btn-add" id="btnAddPF" onclick="addPF()">+ 新增連結</button>
 
+    <h3 id="labelCoverLetterHeader">自傳</h3>
+    <div class="input-item"><textarea id="inputCoverLetter" rows="6" oninput="sync('preCoverLetter', this.value); autoGrowTextarea(this)"></textarea></div>
+
     <button class="btn-print" onclick="window.print()">下載 / 儲存 PDF</button>
     <div class="backup-row">
         <button class="btn-backup" onclick="exportJSON()">匯出備份 (JSON)</button>
@@ -190,6 +193,9 @@
             <div id="prePFList" style="display:flex; flex-direction:column; gap:4px"></div>
         </div>
 
+        <div class="section-header" id="preCoverLetterHeaderView">自傳</div>
+        <div id="preCoverLetter" class="item-desc">尚未撰寫自傳...</div>
+
         <div id="pageGuides"></div>
     </div>
 </div>
@@ -203,7 +209,8 @@
             salaryPre: "期待年薪:", summaryHeader: "專業概覽", expView: "工作經歷", eduView: "教育背景", pfHeader: "作品集連結",
             phTitle: "職位 / 學位", phOrg: "單位 / 學校", phTime: "年份", phDesc: "成就描述...", noUrl: "尚未設定網址", empty: "(未填寫)",
             pfLabelPh: "名稱（如 GitHub）", pfUrlPh: "https://...", btnAddPF: "+ 新增連結",
-            skillCatPh: "分類（如 前端）", skillNamePh: "技能名稱"
+            skillCatPh: "分類（如 前端）", skillNamePh: "技能名稱",
+            coverLetterHeader: "自傳", coverLetterView: "自傳"
         },
         en: {
             display: "Settings", lang: "English UI", showSalary: "Show Salary", showPhoto: "Show Photo", showPF: "Show Portfolio",
@@ -212,7 +219,8 @@
             salaryPre: "Expected Salary:", summaryHeader: "Summary", expView: "Experience", eduView: "Education", pfHeader: "Portfolio",
             phTitle: "Title", phOrg: "Org", phTime: "Period", phDesc: "Details...", noUrl: "Not Set", empty: "(Empty)",
             pfLabelPh: "Label (e.g. GitHub)", pfUrlPh: "https://...", btnAddPF: "+ Add Link",
-            skillCatPh: "Category (e.g. Frontend)", skillNamePh: "Skill name"
+            skillCatPh: "Category (e.g. Frontend)", skillNamePh: "Skill name",
+            coverLetterHeader: "Cover Letter", coverLetterView: "Cover Letter"
         }
     };
 
@@ -262,6 +270,8 @@
         document.getElementById('preEduHeaderView').innerText = lang.eduView;
         document.getElementById('prePFHeader').innerText = lang.pfHeader;
         document.getElementById('btnAddPF').innerText = lang.btnAddPF;
+        document.getElementById('labelCoverLetterHeader').innerText = lang.coverLetterHeader;
+        document.getElementById('preCoverLetterHeaderView').innerText = lang.coverLetterView;
         document.getElementById('skillCatInput').placeholder = lang.skillCatPh;
         document.getElementById('skillInput').placeholder = lang.skillNamePh;
         renderAll();
@@ -463,6 +473,7 @@
                 salary: document.getElementById('inputSalary').value,
                 military: document.getElementById('inputMilitary').value,
                 summary: document.getElementById('inputSummary').value,
+                coverLetter: document.getElementById('inputCoverLetter').value,
                 photo: photoSrc.startsWith('data:') ? photoSrc : null
             },
             skills: skills,
@@ -521,6 +532,8 @@
         if (pfSection && !pfSection.classList.contains('hidden')) {
             push(document.getElementById('prePFHeader'), document.getElementById('prePFList'));
         }
+
+        push(document.getElementById('preCoverLetterHeaderView'), document.getElementById('preCoverLetter'));
 
         return units.sort((a, b) => a.top - b.top);
     }
@@ -590,6 +603,7 @@
         document.getElementById('inputPhone').value = saved.profile.phone || '';
         document.getElementById('inputSalary').value = saved.profile.salary;
         document.getElementById('inputSummary').value = saved.profile.summary;
+        document.getElementById('inputCoverLetter').value = saved.profile.coverLetter || '';
         renderMilitaryOptions();
         document.getElementById('inputMilitary').value = saved.profile.military || '';
         document.getElementById('colorPicker').value = saved.settings.themeColor;
@@ -603,6 +617,7 @@
         sync('preEmail', saved.profile.email);
         updatePhone(saved.profile.phone || '');
         sync('preSummary', saved.profile.summary);
+        sync('preCoverLetter', saved.profile.coverLetter || '');
         updateSalary(saved.profile.salary);
         if (saved.profile.photo) document.getElementById('prePhoto').src = saved.profile.photo;
         togglePhotoVisibility(saved.settings.showPhoto);
