@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "savedAt": "2026-07-15T00:00:00.000Z",
+  "settings": {
+    "themeColor": "#1a2a3a",
+    "isEnglish": false,
+    "showPhoto": false,
+    "showSalary": false,
+    "showPF": true
+  },
+  "profile": {
+    "name": "ALEX CHANG",
+    "email": "johnjon823@gmail.com",
+    "phone": "",
+    "salary": "",
+    "military": "completed",
+    "summary": "後端工程師（Java / Spring Boot）。5 人團隊、7 週交付 7 個微服務的線上賭場帳務系統：3.5 萬行 Java、69 個 REST API、13 個 Kafka topics，個人貢獻 41%（230/554 commits）。擅長高併發帳務正確性設計（冪等鍵＋樂觀鎖＋CQRS）與根因定位：曾以 Prometheus 指標鏈定位熔斷器逾時配置錯位，將壓測 HTTP 5xx 由 78% 降至 0，全程帳務零違規。另有量化交易系統（Python / FastAPI）與電商後端獨立開發經驗。",
+    "photo": null
+  },
+  "skills": [
+    "Java 21",
+    "Spring Boot 3",
+    "Spring Cloud Gateway",
+    "PostgreSQL",
+    "MySQL",
+    "Redis",
+    "Kafka",
+    "Docker",
+    "JMeter",
+    "Prometheus",
+    "Python / FastAPI",
+    "React",
+    "Git / CI"
+  ],
+  "exp": [
+    {
+      "title": "業務人員",
+      "org": "中租(供行部)",
+      "time": "2022.11-2023.2",
+      "desc": "- 進行業務拜訪與開發客戶，每週cold-call 300通左右，每日60通。\n- 一個月內最高拜訪陌生客戶數量13個。"
+    },
+    {
+      "title": "招募顧問(獵頭)",
+      "org": "德仁管理顧問有限公司",
+      "time": "2023.3-2024.3",
+      "desc": "- 協助候選人(軟體工程師)面試前準備、面試、薪水談判與報到。\n- 陌生開發軟體公司客戶。"
+    },
+    {
+      "title": "招募顧問(獵頭)",
+      "org": "自僱",
+      "time": "2024.4-2025.8",
+      "desc": "- 協助候選人(軟體工程師)面試前準備、面試、薪水談判與報到。\n- 陌生開發5個軟體公司客戶。"
+    },
+    {
+      "title": "國外業務",
+      "org": "常廣股份有限公司",
+      "time": "2025.9-2025.12",
+      "desc": "- 公司是在做微創手術耗材。\n- 協助內部產品開發專利搜尋。\n- 與國外客戶線上會議介紹產品以及關心產品使用狀況。\n- 成功陌生開發哥倫比亞海外客戶。"
+    }
+  ],
+  "projects": [
+    {
+      "title": "Lucky Star Casino — 微服務賭場帳務系統",
+      "org": "5 人團隊專案（Java 21 / Spring Boot 3.3.5）｜個人貢獻 41%（230/554 commits）",
+      "time": "2026/05 - 至今",
+      "desc": "• 擔任組長安排工作任務：7 個後端微服務＋2 個前端：約 3.5 萬行 Java、69 個 REST API、13 個 Kafka topics（含 5 個死信 DLT）、7 週內 212 個 PR 全數經 code review 合併。\n• 高併發壓測根因定位：以 Prometheus 指標鏈證實熔斷器 TimeLimiter 逾時（1s）與慢呼叫門檻（3s）配置錯位引發 thundering herd，修復後 HTTP 5xx 由 78% 降至 0（150 併發）、86% 降至 31%（1,000 併發）。\n• 帳務正確性設計：冪等鍵（DB UNIQUE）＋樂觀鎖（@Version）＋CQRS 讀寫分離（PostgreSQL 寫／MySQL 讀，Kafka 最終一致），壓測極端降級下全程零超扣、零重複入帳。\n• Saga 補償機制（ADR-009）：派彩入帳失敗自動落補償單、排程以同一冪等鍵重試，杜絕「玩家贏了但錢憑空消失」，另建對帳腳本稽核。\n• 捕魚機 RTP 機率模型：定位「體感 RTP ~46%」的模型缺口（設計值未涵蓋魚游走的子彈沉沒分佈），設計殘血回收機制（回收率 0.70）將最差體感虧損壓進 30%，數學上保證莊家端 RTP 不超付。\n• 測試與契約紀律：112 個測試類、664 個測試方法（H2 零依賴＋Testcontainers 真 DB 雙層），ContractParityTest 防前後端玩法數值漂移，CI 綠燈才可合併。\n• 文件自動化稽核：撰寫 Node.js 工具依證據檔＋git log 自動產出 108 項任務進度表，--check 模式偵測文件漂移即 CI 失敗，解決手動維護進度長期誤報的流程問題。"
+    },
+    {
+      "title": "Albee Stock — 美股自動交易機器人",
+      "org": "個人專案（FastAPI + React + Alpaca API）",
+      "time": "2025 - 2026",
+      "desc": "• 獨立開發多 Bot 自動交易系統：回測引擎、風控出場、Paper Trading 逐階段迭代。\n• 建立「回測＝實盤」誠信框架：同一資料源、計入手續費與滑價、訊號隔日開盤成交防偷看未來、策略部署一律看樣本外（OOS）表現防過擬合。\n• 分層驗證紀律：每加一層機制（凱利部位、meta-labeling、狀態辨識）都做 baseline 對照，樣本外未加分即砍除——實際砍掉總經資料層與凱利部位層。\n• 修復 Serverless Postgres（Neon）閒置斷線問題：連線池 TCP keepalive 存活探測，斷線在使用前即偵測重建。"
+    },
+    {
+      "title": "Sogno di Casa — Spring Boot 電商後端",
+      "org": "個人專案",
+      "time": "2025",
+      "desc": "• Spring Boot REST API 分層架構與 Spring Security 認證授權實作。\n• 修復權限驗證安全性缺陷，建立「授權檢查不能只做在前端」的原則，延續應用於後續專案的後台權限收斂。"
+    }
+  ],
+  "edu": [
+    {
+      "title": "學士（請填系所）",
+      "org": "（請填學校）",
+      "time": "2018 - 2022",
+      "desc": ""
+    }
+  ],
+  "pf": [
+    {
+      "label": "GitHub",
+      "url": "https://github.com/AlexChang1999"
+    },
+    {
+      "label": "Resume Editor（Live Demo）",
+      "url": "https://alexchang1999.github.io/Resume-editor/"
+    }
+  ]
+}

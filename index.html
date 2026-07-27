@@ -143,6 +143,10 @@
     <div id="expListEditor"></div>
     <button class="btn-add" onclick="addItem('exp')">+ 新增經歷</button>
 
+    <h3 id="labelProjectsHeader">作品</h3>
+    <div id="projectsListEditor"></div>
+    <button class="btn-add" onclick="addItem('projects')">+ 新增作品</button>
+
     <h3 id="labelEduHeader">教育程度</h3>
     <div id="eduListEditor"></div>
     <button class="btn-add" onclick="addItem('edu')">+ 新增教育</button>
@@ -189,6 +193,9 @@
         <div class="section-header" id="preExpHeaderView">工作經歷</div>
         <div id="preExpList"></div>
 
+        <div class="section-header" id="preProjectsHeaderView">作品</div>
+        <div id="preProjectsList"></div>
+
         <div class="section-header" id="preEduHeaderView">教育背景</div>
         <div id="preEduList"></div>
 
@@ -212,8 +219,8 @@
         zh: {
             display: "介面與顯示設定", lang: "使用英文界面 (English)", showSalary: "顯示期待薪資", showPhoto: "顯示大頭貼", showPF: "顯示作品集網址",
             personal: "個人資訊", name: "姓名", email: "Email", phone: "電話", salaryIn: "期待年薪", military: "兵役狀況（選填）",
-            summary: "自我簡介 & 技能", expHeader: "工作經歷", eduHeader: "教育程度", portfolio: "作品集網址",
-            salaryPre: "期待年薪:", summaryHeader: "專業概覽", expView: "工作經歷", eduView: "教育背景", pfHeader: "作品集連結",
+            summary: "自我簡介 & 技能", expHeader: "工作經歷", projectsHeader: "作品", eduHeader: "教育程度", portfolio: "作品集網址",
+            salaryPre: "期待年薪:", summaryHeader: "專業概覽", expView: "工作經歷", projectsView: "作品", eduView: "教育背景", pfHeader: "作品集連結",
             phTitle: "職位 / 學位", phOrg: "單位 / 學校", phTime: "年份", phDesc: "成就描述...", noUrl: "尚未設定網址", empty: "(未填寫)",
             pfLabelPh: "名稱（如 GitHub）", pfUrlPh: "https://...", btnAddPF: "+ 新增連結",
             skillCatPh: "分類（如 前端）", skillNamePh: "技能名稱",
@@ -224,8 +231,8 @@
         en: {
             display: "Settings", lang: "English UI", showSalary: "Show Salary", showPhoto: "Show Photo", showPF: "Show Portfolio",
             personal: "Personal", name: "Name", email: "Email", phone: "Phone", salaryIn: "Salary", military: "Military Service (optional)",
-            summary: "Summary & Skills", expHeader: "Work Experience", eduHeader: "Education", portfolio: "Portfolio URL",
-            salaryPre: "Expected Salary:", summaryHeader: "Summary", expView: "Experience", eduView: "Education", pfHeader: "Portfolio",
+            summary: "Summary & Skills", expHeader: "Work Experience", projectsHeader: "Projects", eduHeader: "Education", portfolio: "Portfolio URL",
+            salaryPre: "Expected Salary:", summaryHeader: "Summary", expView: "Experience", projectsView: "Projects", eduView: "Education", pfHeader: "Portfolio",
             phTitle: "Title", phOrg: "Org", phTime: "Period", phDesc: "Details...", noUrl: "Not Set", empty: "(Empty)",
             pfLabelPh: "Label (e.g. GitHub)", pfUrlPh: "https://...", btnAddPF: "+ Add Link",
             skillCatPh: "Category (e.g. Frontend)", skillNamePh: "Skill name",
@@ -252,6 +259,7 @@
     ];
     let data = {
         exp: [{ title: 'Backend Developer', org: 'Tech Inc.', time: '2025 - Present', desc: 'API design...' }],
+        projects: [],
         edu: [{ title: 'B.B.A.', org: 'University', time: '2018 - 2022', desc: 'Major in Biz.' }],
         certs: [{ title: 'TOEIC', org: 'ETS', time: '2024', desc: '900' }],
         pf: [{ label: 'GitHub', url: '' }]
@@ -274,11 +282,13 @@
         updateMilitary(document.getElementById('inputMilitary').value);
         document.getElementById('labelSummaryTitle').innerText = lang.summary;
         document.getElementById('labelExpHeader').innerText = lang.expHeader;
+        document.getElementById('labelProjectsHeader').innerText = lang.projectsHeader;
         document.getElementById('labelEduHeader').innerText = lang.eduHeader;
         document.getElementById('labelPortfolio').innerText = lang.portfolio;
         document.getElementById('textSalaryLabel').innerText = lang.salaryPre;
         document.getElementById('preSummaryHeader').innerText = lang.summaryHeader;
         document.getElementById('preExpHeaderView').innerText = lang.expView;
+        document.getElementById('preProjectsHeaderView').innerText = lang.projectsView;
         document.getElementById('preEduHeaderView').innerText = lang.eduView;
         document.getElementById('labelCertsHeader').innerText = lang.certsHeader;
         document.getElementById('preCertsHeaderView').innerText = lang.certsView;
@@ -342,8 +352,8 @@
     function updateItem(type, index, field, val) { data[type][index][field] = val; renderPreviewList(type); }
 
     function renderAll() {
-        renderEditorList('exp'); renderEditorList('edu'); renderEditorList('certs');
-        renderPreviewList('exp'); renderPreviewList('edu'); renderPreviewList('certs');
+        renderEditorList('exp'); renderEditorList('projects'); renderEditorList('edu'); renderEditorList('certs');
+        renderPreviewList('exp'); renderPreviewList('projects'); renderPreviewList('edu'); renderPreviewList('certs');
         renderSkills();
         renderPF();
     }
@@ -496,6 +506,7 @@
             },
             skills: skills,
             exp: data.exp,
+            projects: data.projects,
             edu: data.edu,
             certs: data.certs,
             pf: data.pf
@@ -537,7 +548,7 @@
         const tags = document.getElementById('preTags');
         push(sumHeader, tags);
 
-        [['preExpHeaderView', 'preExpList'], ['preEduHeaderView', 'preEduList'], ['preCertsHeaderView', 'preCertsList']].forEach(([headerId, listId]) => {
+        [['preExpHeaderView', 'preExpList'], ['preProjectsHeaderView', 'preProjectsList'], ['preEduHeaderView', 'preEduList'], ['preCertsHeaderView', 'preCertsList']].forEach(([headerId, listId]) => {
             const header = document.getElementById(headerId);
             const list = document.getElementById(listId);
             if (!header || !list) return;
@@ -613,6 +624,8 @@
         // 舊資料 skills 是純字串陣列（無分類）：搬進新的 {category, name} 結構
         skills = saved.skills.map(s => typeof s === 'string' ? { category: '', name: s } : s);
         data.exp = saved.exp;
+        // 舊備份沒有 projects 欄位（此區塊為後補功能）：預設空陣列，讓舊備份能正常匯入
+        data.projects = Array.isArray(saved.projects) ? saved.projects : [];
         data.edu = saved.edu;
         // 舊備份沒有 certs 欄位（此區塊為後補功能）：預設空陣列，讓舊備份能正常匯入
         data.certs = Array.isArray(saved.certs) ? saved.certs : [];
